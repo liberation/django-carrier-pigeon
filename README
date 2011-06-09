@@ -1,6 +1,6 @@
-======
-export
-======
+===================
+django-push-content
+===================
 
 Kesako django-push-content ?
 ============================
@@ -24,6 +24,8 @@ Supported push methods
 
 Setup
 =====
+
+Add push_content to INSTALLED_APPS in settings.py
 
 configuration
 -------------
@@ -73,8 +75,17 @@ an app named ``libe`` for the partner ``Test``, the template should be in
 the template path ``export/Test/libe_Article.xml``. This template will be 
 used to render the file exported to ``Test`` partner.
 
-Add a push method
------------------
+cron
+----
+
+You have to setup a cron, preferably fcron, to run every 5 minutes after each 
+run to execute ``push`` command.
+
+You can setup ``clean_push_queue`` & ``clean_export_files`` every now and them 
+to clean up database from fullfilled rules and removed old files from ``PUSH_CONTENT_OUTPUT_DIRECTORY``.
+
+How to add a push method
+------------------------
 
 You will need to modify ``send`` function in ``pusher.py``
 
