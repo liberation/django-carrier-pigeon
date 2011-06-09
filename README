@@ -13,9 +13,9 @@ This applications comes with three commands:
 
 - push : pushes items until the end
 - clean_push_queue : cleans the queue from already pushed items. It's
-  configured with EXPORT_MAX_AGE
+  configured with PUSH_CONTENT_MAX_AGE
 - clean_export_files : cleans the export file directory from old files.
-  It's configured with EXPORT_MAX_AGE
+  It's configured with PUSH_CONTENT_MAX_AGE
 
 Dependencies
 ============
@@ -89,6 +89,12 @@ run to execute ``push`` command.
 
 You can setup ``clean_push_queue`` & ``clean_export_files`` every now and them 
 to clean up database from fullfilled rules and removed old files from ``PUSH_CONTENT_OUTPUT_DIRECTORY``.
+
+logging
+-------
+
+You can configure to receive emails when the app logs errors to easly keep an 
+eye on the if the job is done correctly.
 
 How to add a push method
 ------------------------
