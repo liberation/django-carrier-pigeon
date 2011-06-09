@@ -64,7 +64,7 @@ class Command(BaseCommand):
                 row.save()
             else:
                 # build template
-                context = Context({'item': row.content_object})
+                context = Context({'object': row.content_object})
                 output = template.render(context)
 
                 output_filename = '%s_%s_%s_%s.xml' % (app_label,
