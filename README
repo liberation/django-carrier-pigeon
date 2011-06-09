@@ -1,0 +1,84 @@
+======
+export
+======
+
+Kesako django-push-content ?
+============================
+
+django-push-content helps to send content over the internet based on
+rules that are defined in your project. It's used at liberation.fr to
+keep our up-to-date about the content available on the website.
+
+This applications comes with three commands:
+
+- push : pushes items until the end
+- clean_push_queue : cleans the queue from already pushed items. It's
+  configured with EXPORT_MAX_AGE
+- clean_export_files : cleans the export file directory from old files.
+  It's configured with EXPORT_MAX_AGE
+
+Supported push methods
+======================
+
+- ftp
+
+Setup
+=====
+
+configuration
+-------------
+
+You have to define 3 constants in settings.py of your project::
+
+  PUSH_CONTENT_MAX_AGE = 3600*24*30 # 30 days
+  PUSH_CONTENT_OUTPUT_DIRECTORY = os.path.join(SITE_ROOT, 'tmp', 'export') 
+  PUSH_CONTENT_MAX_PUSH_ATTEMPS = 5 
+
+
+Add rules
+-------------
+
+First you have to inherit classes you want to be able to push with 
+``BasicDirtyFieldsMixin`` that you can find in ``push_content.models``.
+
+Then you have to configure rules. Configuration is done with python 
+class. You have to define a class in a file called ``push_content_config.py`` that looks like this one:: 
+
+  from push_content import register
+
+
+  class Test:
+      push_urls = ('ftp://k689kl:s14s5t@localhost', )
+
+      def filter_by_instance_type(self, instance):
+          return (instance._meta.object_name in ['Article'] and
+                  instance._meta.app_label in ['libe'])
+
+      def filter_by_updates(self, instance):
+          return True
+
+      def filter_by_state(self, instance):
+          return True
+
+      def get_directory(self, instance):
+          return '/test/'
+
+  register(Test)
+
+Now you have to import this file in the ``__init__.py`` file of the project.
+
+The next step is to add templates for each partner and each models you 
+want to export. For example a template for a model named ``Article`` from 
+an app named ``libe`` for the partner ``Test``, the template should be in 
+the template path ``export/Test/libe_Article.xml``. This template will be 
+used to render the file exported to ``Test`` partner.
+
+Add a push method
+-----------------
+
+You will need to modify ``send`` function in ``pusher.py``
+
+TODO
+----
+
+ - make a register for push methods
