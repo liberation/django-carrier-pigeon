@@ -17,6 +17,12 @@ This applications comes with three commands:
 - clean_export_files : cleans the export file directory from old files.
   It's configured with EXPORT_MAX_AGE
 
+Dependencies
+============
+
+ - django-extended-choices, liberation fork: https://github.com/liberation/django-extended-choices 
+ - fcron (recommanded to run ``push`` command)
+
 Supported push methods
 ======================
 
