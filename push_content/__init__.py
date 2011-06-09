@@ -15,7 +15,7 @@ from push_content.models import BasicDirtyFieldsMixin
 def register(clazz):
     logger = logging.getLogger('push_content.registry')
     name = clazz.__name__.lower()
-    logger.debug('Registring %s partner configuration.' % name)
+    logger.debug('Registring ``%s`` rule.' % name)
     REGISTRY[name] = clazz()
 
 
