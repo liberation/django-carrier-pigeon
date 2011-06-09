@@ -21,7 +21,6 @@ Dependencies
 ============
 
  - django-extended-choices, liberation fork: https://github.com/liberation/django-extended-choices 
- - fcron (recommanded to run ``push`` command)
 
 Supported push methods
 ======================
@@ -47,10 +46,10 @@ Add rules
 -------------
 
 First you have to inherit classes you want to be able to push with 
-``BasicDirtyFieldsMixin`` that you can find in ``push_content.models``.
+``BasicDirtyFieldsMixin`` that you can find in ``push_content.models``. This class will give the ability to detect changed fields in a save process 
 
 Then you have to configure rules. Configuration is done with python 
-class. You have to define a class in a file called ``push_content_config.py`` that looks like this one:: 
+class. You have to define a class in a file called ``push_content_config.py`` (for example) that looks like this one:: 
 
   from push_content import register
 
@@ -63,28 +62,33 @@ class. You have to define a class in a file called ``push_content_config.py`` th
                   instance._meta.app_label in ['libe'])
 
       def filter_by_updates(self, instance):
-          return True
+          # Check here the fields that may have changed to make an item candidate
+          if 'access' in instance._modified_attrs:
+              return True
+          return False
 
       def filter_by_state(self, instance):
-          return True
+          # Check here the state of the item to be candidate
+          if instance.access = 0:
+              return True
+          return False
 
       def get_directory(self, instance):
           return '/test/'
 
   register(Test)
 
-Now you have to import this file in the ``__init__.py`` file of the project.
+Nota : you have to make sure that your file is loaded by Django, for example importing it in the ``__init__.py`` file of the project.
 
-The next step is to add templates for each partner and each models you 
+The next step is to add templates for each export rule and each models you 
 want to export. For example a template for a model named ``Article`` from 
-an app named ``libe`` for the partner ``Test``, the template should be in 
-the template path ``export/Test/libe_Article.xml``. This template will be 
-used to render the file exported to ``Test`` partner.
+an app named ``libe`` for the export rule ``Test``, the template should be in 
+the template path ``export/test/libe_article.xml``.
 
 cron
 ----
 
-You have to setup a cron, preferably fcron, to run every 5 minutes after each 
+You have to setup a cron, preferably fcron, to run every x minutes after each 
 run to execute ``push`` command.
 
 You can setup ``clean_push_queue`` & ``clean_export_files`` every now and them 
@@ -104,4 +108,4 @@ You will need to modify ``send`` function in ``pusher.py``
 TODO
 ----
 
- - make a register for push methods
+ - make a register for addind custom push methods
