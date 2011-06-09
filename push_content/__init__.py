@@ -35,7 +35,6 @@ def load_models():
     selected_models = [klass for klass in all_class
                        if BasicDirtyFieldsMixin in klass.mro()]
 
-    logger.debug('Selected models : %s' % selected_models)
     return selected_models
 
 SELECTED_MODELS = load_models()
