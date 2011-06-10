@@ -8,20 +8,55 @@ from push_content.utils import join_url_to_directory
 logger = logging.getLogger('push_content.select')
 
 
-def filter(configuration, instance, created):
+def filter(rule_name, configuration, instance, created):
     """Returns True if the partner configuration validates
     this instance, False otherwise."""
-
-    if not configuration.filter_by_instance_type(instance):
+    try:
+        validation = configuration.filter_by_instance_type(instance)
+    except Exception, e:
+        logger.error('error during filter_by_instance_type')
+        logger.error('catched exception message: %s' % e.message)
+        row = ItemToPush(rule_name=rule_name,
+                         content_object=instance)
+        row.status = ItemToPush.STATUS.FILTER_BY_INSTANCE_TYPE
+        row.message = "%s: %s" % (e.__class__.__name__, e.message)
+        row.save()
+        return False
+    if not validation:
         logger.debug('Item failed instance filter')
         return False
 
     if not created:
-        if not configuration.filter_by_updates(instance):
+
+        try:
+            validation = configuration.filter_by_updates(instance)
+        except Exception, e:
+            logger.error('error during filter_by_updates')
+            logger.error('catched exception message: %s' % e.message)
+            row = ItemToPush(rule_name=rule_name,
+                             content_object=instance)
+            row.status = ItemToPush.STATUS.FILTER_BY_UPDATES_ERROR
+            row.message = "%s: %s" % (e.__class__.__name__, e.message)
+            row.save()
+            return False
+
+        if not validation:
             logger.debug('Item failed updates filter')
             return False
 
-    if not configuration.filter_by_state(instance):
+    try:
+        validation = configuration.filter_by_state(instance)
+    except Exception, e:
+        logger.error('error during filter_by_state')
+        logger.error('catched exception message: %s' % e.message)
+        row = ItemToPush(rule_name=rule_name,
+                         content_object=instance)
+        row.status = ItemToPush.STATUS.FILTER_BY_STATE_ERROR
+        row.message = "%s: %s" % (e.__class__.__name__, e.message)
+        row.save()
+        return False
+
+    if not validation:
         logger.debug('Item failed state filter')
         return False
     return True
@@ -56,7 +91,7 @@ def select(sender, instance=None, created=False, **kwargs):
         logger.debug('selecting Item for `%s` rule_name' % rule_name)
         # if instance doesn't match configuration
         # try another rule_name
-        if not filter(configuration, instance, created):
+        if not filter(rule_name, configuration, instance, created):
             continue
 
         target_directory = configuration.get_directory(instance)
@@ -77,8 +112,8 @@ def select(sender, instance=None, created=False, **kwargs):
                 continue
 
             item = ItemToPush(rule_name=rule_name,
-                       target_url=target_url,
-                       content_object=instance)
+                              target_url=target_url,
+                              content_object=instance)
             item.save()
             logger.debug('Added item in the ItemToPush queue @ %s'
                          % target_url)

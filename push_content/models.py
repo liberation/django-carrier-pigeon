@@ -35,7 +35,11 @@ class ItemToPush(models.Model):
                      # ERRORS SHOULD BE OVER 100
                      ('PUSH_ERROR', 110, 'Push error'),
                      ('TEMPLATE_NOT_FOUND', 120, 'Template not found'),
-                     ('SEND_ERROR', 130, 'Could not send file'))
+                     ('SEND_ERROR', 130, 'Could not send file'),
+                     ('FILTER_BY_INSTANCE_TYPE_ERROR', 140, 'Error in select during filter by instance type'),
+                     ('FILTER_BY_UPDATES_ERROR', 150, 'Error in select during filter by updates'),
+                     ('FILTER_BY_STATE_ERROR', 160, 'Error in select during filter by state'),
+                     ('GET_DIRECTORY', 170, 'Error in select during get directory'))
 
     rule_name = models.SlugField()
     target_url = models.CharField(max_length=255)
