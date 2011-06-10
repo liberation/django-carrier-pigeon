@@ -101,7 +101,7 @@ def select(sender, instance=None, created=False, **kwargs):
             logger.error('catched exception message: %s' % e.message)
             row = ItemToPush(rule_name=rule_name,
                              content_object=instance)
-            row.status = ItemToPush.STATUS.GET_DIRECTORY
+            row.status = ItemToPush.STATUS.GET_DIRECTORY_ERROR
             row.message = "%s: %s" % (e.__class__.__name__, e.message)
             row.save()
             continue
