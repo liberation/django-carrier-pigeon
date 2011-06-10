@@ -111,10 +111,10 @@ def select(sender, instance=None, created=False, **kwargs):
                 logger.debug('This item is already in the queue... skipping.')
                 continue
 
-            item = ItemToPush(rule_name=rule_name,
+            row = ItemToPush(rule_name=rule_name,
                               target_url=target_url,
                               content_object=instance)
-            item.save()
+            row.save()
             logger.debug('Added item in the ItemToPush queue @ %s'
                          % target_url)
     logger.debug('end of select')
