@@ -69,11 +69,34 @@ class Command(BaseCommand):
                 row.message = message
                 row.save()
             else:
-                # build template
+                # build output
                 context = configuration.get_extra_context(object)
                 context['object'] = object
                 context = Context(context)
                 output = template.render(context)
+                
+                # validate output
+                validation = True
+                for validator in configuration.validators:
+                    try:
+                        validator(output)
+                        logger.debug('validation ``%s`` passed successfully' % validator.__name__)
+                    except Exception, e:
+                        validation = False
+                        logger.debug('validation ``%s`` failed !')
+                        message = 'catched exception %s : %s' % (Exception.__class__.__name__,
+                                                                 e.message)
+                        logger.debug(message)
+                        row.status = ItemToPush.STATUS.VALIDATION_ERROR
+                        if row.message != None:
+                            row.message += '\n' + message
+                        else:
+                            row.message = message
+                        row.save()
+
+                if not validation:
+                    break # if one validator did not pass we do no want to 
+                          # send the file
 
                 output_filename = configuration.get_output_filename(object)
                 target_url = URL(row.target_url)
