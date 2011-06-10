@@ -14,7 +14,7 @@ from django.template.base import TemplateDoesNotExist
 from push_content.models import ItemToPush
 from push_content.pusher import send
 from push_content.utils import URL
-from push_content import REGISTER
+from push_content import REGISTRY
 
 logger = logging.getLogger('push_content.command.push')
 
@@ -48,11 +48,15 @@ class Command(BaseCommand):
             row.save()
  
             rule_name = row.rule_name
-            configuration = REGISTER[rule_name]
+            configuration = REGISTRY[rule_name]
+
+            object = row.content_object
 
             # build template file path
-            object = row.content_object
-            template_name = configuration.output_filename(instance)
+            app_label = row.content_object._meta.app_label.lower()
+            class_name = row.content_object._meta.module_name
+            template_name = '%s_%s.xml' % (app_label, class_name)
+            
             template_path = 'push_content/%s/%s' % (rule_name, template_name)
 
             # try to fetch template file
@@ -66,16 +70,12 @@ class Command(BaseCommand):
                 row.save()
             else:
                 # build template
-                context = configuration.extra_context()
-                context['object'] = row.content_object
+                context = configuration.get_extra_context(object)
+                context['object'] = object
                 context = Context(context)
                 output = template.render(context)
 
-                output_filename = '%s_%s_%s_%s.xml' % (app_label,
-                                                       class_name,
-                                                       row.content_object.id,
-                                                       row.id)
-
+                output_filename = configuration.get_output_filename(object)
                 target_url = URL(row.target_url)
 
                 # build output file path for archiving
