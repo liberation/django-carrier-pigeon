@@ -94,7 +94,18 @@ def select(sender, instance=None, created=False, **kwargs):
         if not filter(rule_name, configuration, instance, created):
             continue
 
-        target_directory = configuration.get_directory(instance)
+        try:
+            target_directory = configuration.get_directory(instance)
+        except Exception, e:
+            logger.error('error during ``get_directory``')
+            logger.error('catched exception message: %s' % e.message)
+            row = ItemToPush(rule_name=rule_name,
+                             content_object=instance)
+            row.status = ItemToPush.STATUS.GET_DIRECTORY
+            row.message = "%s: %s" % (e.__class__.__name__, e.message)
+            row.save()
+            continue
+
         logger.debug('target directory is %s' % target_directory)
 
         # try to create a row for each push_url
