@@ -6,7 +6,7 @@ class DefaultConfiguration:
 
     @property
     def validators(self):
-        raise NotImplementedError()
+        return list()
 
     def filter_by_instance_type(self, instance):
         raise NotImplementedError()
