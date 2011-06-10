@@ -24,5 +24,5 @@ class DefaultConfiguration:
         return dict()
 
     def get_output_filename(self, instance):
-01        return '%s_%s.xml' % (instance._meta.app_label.lower(), 
+        return '%s_%s.xml' % (instance._meta.app_label.lower(), 
                               instance._meta.module_name)
