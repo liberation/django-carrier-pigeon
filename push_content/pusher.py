@@ -33,7 +33,9 @@ def ftp_send(row, url, file_path):
         row.save()
         return False
 
+
 def send(row, url, file_path):
     """dispactch send according to url scheme"""
     if url.scheme == 'ftp':
         return ftp_send(row, url, file_path)
+    logger.error('url shceme %s not supported' % url.scheme)

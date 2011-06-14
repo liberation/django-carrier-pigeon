@@ -9,12 +9,13 @@ from push_content.utils import duplicate_row
 logger = logging.getLogger('django_push.facility')
 
 
-def add_item_to_push(instance, configuration_name):
-    configuration = REGISTRY[configuration_name]
-    rule_name = configuration.__class__.__name__.lower()
+def add_item_to_push(instance, rule_name):
+    logger.debug('adding %s for %s config' % (instance, rule_name))
+    rule = REGISTRY[rule_name]
+    rule_name = rule.__class__.__name__.lower()
 
     try:
-        target_directory = configuration.get_directory(instance)
+        target_directory = rule.get_directory(instance)
     except Exception, e:
         logger.error('error during ``get_directory``')
         logger.error('catched exception message: %s' % e.message)
@@ -27,7 +28,7 @@ def add_item_to_push(instance, configuration_name):
 
     logger.debug('target directory is %s' % target_directory)
 
-    for push_url in configuration.push_urls:
+    for push_url in rule.push_urls:
         target_url = join_url_to_directory(push_url, target_directory)
 
         logger.debug('target url is %s' % target_url)
@@ -46,4 +47,4 @@ def add_item_to_push(instance, configuration_name):
         row.save()
         logger.debug('Added item in the ItemToPush queue @ %s'
                      % target_url)
-        configuration.is_candidate(row)
+        rule.is_candidate(row)

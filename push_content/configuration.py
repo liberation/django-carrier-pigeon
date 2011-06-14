@@ -7,7 +7,7 @@ from django.template.base import TemplateDoesNotExist
 from push_content.models import ItemToPush
 
 
-logger = logging.getLogger('push_content.configuraiton')
+logger = logging.getLogger('push_content.configuration')
 
 
 class DefaultConfiguration:

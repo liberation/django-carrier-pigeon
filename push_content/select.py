@@ -4,7 +4,7 @@ from push_content.models import ItemToPush
 
 from push_content import REGISTRY
 
-from push_content.utils import join_url_to_directory
+from push_content.facility import add_item_to_push
 
 
 logger = logging.getLogger('push_content.select')
@@ -71,11 +71,12 @@ def select(sender, instance=None, created=False, **kwargs):
                  (instance._meta.object_name, instance.pk))
 
     for rule_name, configuration in REGISTRY.iteritems():
-        logger.debug('selecting Item for `%s` rule_name' % rule_name)
+        logger.debug('selecting Item for `%s` rule' % rule_name)
         # if instance doesn't match configuration
         # try another rule_name
         if not filter(rule_name, configuration, instance, created):
             continue
 
         # try to create a row for each push_url
+        add_item_to_push(instance, rule_name)
     logger.debug('end of select')

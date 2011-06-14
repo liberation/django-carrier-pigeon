@@ -20,7 +20,7 @@ def get_first_row_in_queue():
     try:
         row = ItemToPush.objects.all()
         row = row.order_by('creation_date')
-        row = row.filter(status=10)
+        row = row.filter(status=ItemToPush.STATUS.NEW)
         row = row[0]
         return row
     except IndexError:
@@ -108,8 +108,8 @@ class Command(BaseCommand):
             f.close()
 
             # try to send
-            max_push_attempt = settings.PUSH_CONTENT_MAX_PUSH_ATTEMPS
-            for push_attempt_num in xrange(max_push_attempt):
+            max_ = settings.PUSH_CONTENT_MAX_PUSH_ATTEMPS
+            for push_attempt_num in xrange(max_):
                 logger.debug('push attempt %s' % push_attempt_num)
                 row.push_attempts += 1
                 row.last_push_attempts_date = datetime.now()
@@ -123,7 +123,7 @@ class Command(BaseCommand):
                 else:
                     logger.error('send failed')
 
-        # try to fetch a new row
-        row = get_first_row_in_queue()
-        if not row:
-            return
+            # try to fetch a new row
+            row = get_first_row_in_queue()
+            if not row:
+                return
