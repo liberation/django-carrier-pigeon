@@ -59,6 +59,6 @@ class ItemToPush(models.Model):
     content_object = generic.GenericForeignKey('content_type', 'object_id')
 
     def __unicode__(self):
-        return '%s %s %s' % (self.rule_name, 
+        return '%s %s %s' % (self.rule_name,
                              self.target_url,
                              self.get_status_display())

@@ -1,5 +1,7 @@
 from urlparse import urlparse
 
+from push_content.models import ItemToPush
+
 
 def join_url_to_directory(url, directory):
     ends_with = url.endswith('/')
@@ -42,3 +44,23 @@ class URL:
             self.domain, self.port = self.domain.split(':')
         else:
             self.port = None
+
+
+def duplicate_row(rule_name, target_url, instance):
+    """Checks if there already is a row like this one."""
+    query = ItemToPush.objects.filter(rule_name=rule_name,
+                                      target_url=target_url,
+                                      status=ItemToPush.STATUS.NEW)
+
+    app_label = instance._meta.app_label
+    model = instance._meta.module_name
+    name = instance._meta.verbose_name
+    id = instance.id
+
+    query = query.filter(content_type__name=name,
+                         content_type__app_label=app_label,
+                         content_type__model=model,
+                         object_id=id)
+    count = query.count()
+
+    return count > 0
