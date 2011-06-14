@@ -2,6 +2,7 @@ from urlparse import urlparse
 
 from push_content.models import ItemToPush
 
+
 def join_url_to_directory(url, directory):
     ends_with = url.endswith('/')
     starts_with = directory.endswith('/')
