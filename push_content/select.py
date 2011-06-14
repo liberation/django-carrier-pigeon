@@ -1,7 +1,9 @@
 import logging
 
 from push_content.models import ItemToPush
+
 from push_content import REGISTRY
+
 from push_content.utils import join_url_to_directory
 
 
@@ -60,25 +62,6 @@ def filter(rule_name, configuration, instance, created):
         logger.debug('Item failed state filter')
         return False
     return True
-
-
-def duplicate_row(rule_name, target_url, instance):
-    """Checks if there already is a row like this one."""
-    query = ItemToPush.objects.filter(rule_name=rule_name,
-                                      target_url=target_url,
-                                      status=ItemToPush.STATUS.NEW)
-
-    app_label = instance._meta.app_label
-    query = query.filter(content_type__app_label=app_label)
-    model = instance._meta.module_name
-    query = query.filter(content_type__model=model)
-    name = instance._meta.verbose_name
-    query = query.filter(content_type__name=name)
-    id = instance.id
-    query = query.filter(object_id=id)
-    count = query.count()
-
-    return count > 0
 
 
 def select(sender, instance=None, created=False, **kwargs):
