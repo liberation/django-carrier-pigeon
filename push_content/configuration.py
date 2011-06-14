@@ -4,7 +4,7 @@ from django.template import Context
 from django.template import loader
 from django.template.base import TemplateDoesNotExist
 
-from content_push.models import ItemToPush
+from push_content.models import ItemToPush
 
 
 logger = logging.getLogger('push_content.configuraiton')
