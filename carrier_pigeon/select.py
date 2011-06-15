@@ -1,13 +1,13 @@
 import logging
 
-from push_content.models import ItemToPush
+from carrier_pigeon.models import ItemToPush
 
-from push_content import REGISTRY
+from carrier_pigeon import REGISTRY
 
-from push_content.facility import add_item_to_push
+from carrier_pigeon.facility import add_item_to_push
 
 
-logger = logging.getLogger('push_content.select')
+logger = logging.getLogger('carrier_pigeon.select')
 
 
 def filter(rule_name, configuration, instance, created):

@@ -8,17 +8,17 @@ from django.conf import settings
 
 from django.core.management.base import BaseCommand
 
-from push_content.models import ItemToPush
+from carrier_pigeon.models import ItemToPush
 
-from push_content.pusher import send
+from carrier_pigeon.pusher import send
 
-from push_content.utils import URL
-from push_content.utils import join_url_to_directory
+from carrier_pigeon.utils import URL
+from carrier_pigeon.utils import join_url_to_directory
 
-from push_content import REGISTRY
+from carrier_pigeon import REGISTRY
 
 
-logger = logging.getLogger('push_content.command.push')
+logger = logging.getLogger('carrier_pigeon.command.push')
 
 
 def get_first_row_in_queue():
@@ -103,7 +103,7 @@ class Command(BaseCommand):
             output_filename = rule.get_output_filename(instance)
 
             # build output file path for archiving
-            output_directory = settings.PUSH_CONTENT_OUTPUT_DIRECTORY
+            output_directory = settings.CARRIER_PIGEON_OUTPUT_DIRECTORY
             output_directory += '/%s/' % rule_name
 
             # create output_directory if it doesn't exists
@@ -135,7 +135,7 @@ class Command(BaseCommand):
                 target_url = URL(target_url)
 
                 # try to send
-                max_ = settings.PUSH_CONTENT_MAX_PUSH_ATTEMPS
+                max_ = settings.CARRIER_PIGEON_MAX_PUSH_ATTEMPS
                 for push_attempt_num in xrange(max_):
                     logger.debug('push attempt %s' % push_attempt_num)
                     row.push_attempts += 1

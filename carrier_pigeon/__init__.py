@@ -7,14 +7,14 @@ from django.db.models.signals import post_save
 REGISTRY = {}
 
 
-from push_content.select import select
+from carrier_pigeon.select import select
 
-from push_content.models import BasicDirtyFieldsMixin
+from carrier_pigeon.models import BasicDirtyFieldsMixin
 
 
 def register(clazz):
     """Register a class as a push content configuration"""
-    logger = logging.getLogger('push_content.registry')
+    logger = logging.getLogger('carrier_pigeon.registry')
     name = clazz.__name__.lower()
     logger.debug('Registring ``%s`` rule.' % name)
     REGISTRY[name] = clazz()
@@ -23,7 +23,7 @@ def register(clazz):
 def load_models():
     """Returns models from installed apps that inherits
     BasicDirtyFieldsMixin"""
-    logger = logging.getLogger('push_content.init')
+    logger = logging.getLogger('carrier_pigeon.init')
     logger.info('Start of configuration')
     logger.debug('Seeking models that inherits BasicDirtyFieldsMixin.')
     # compute classes that we want to catch
@@ -41,7 +41,7 @@ def load_models():
 SELECTED_MODELS = load_models()
 
 for model in SELECTED_MODELS:
-    logger = logging.getLogger('push_content.init')
+    logger = logging.getLogger('carrier_pigeon.init')
     msg = 'Subscribing post_save for %s model' % model._meta.object_name
     logger.debug(msg)
     post_save.connect(select, sender=model)

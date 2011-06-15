@@ -5,7 +5,7 @@ from datetime import datetime
 from django.core.management.base import BaseCommand
 from django.conf import settings
 
-from push_content.models import ItemToPush
+from carrier_pigeon.models import ItemToPush
 
 
 class Command(BaseCommand):
@@ -13,7 +13,7 @@ class Command(BaseCommand):
     help = __doc__
 
     def handle(self, *args, **options):
-        limit = time() - settings.PUSH_CONTENT_MAX_AGE
+        limit = time() - settings.CARRIER_PIGEON_MAX_AGE
         limit = datetime.fromtimestamp(limit)
         rules = ItemToPush.objects.all()
         rules = rules.filter(status=ItemToPush.STATUS.PUSHED,

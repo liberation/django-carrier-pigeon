@@ -4,7 +4,7 @@ from django.template import Context
 from django.template import loader
 from django.template.base import TemplateDoesNotExist
 
-from push_content.models import ItemToPush
+from carrier_pigeon.models import ItemToPush
 
 
 logger = logging.getLogger('push_content.configuration')
@@ -15,7 +15,7 @@ class DefaultConfiguration:
     to create a configuration. By default this configuration try to
     build an xml file from a template see ``get_output_filename`` and
     ``output`` methods for more information."""
-    
+
     @property
     def push_urls(self):
         """Remote locations urls where to push content."""

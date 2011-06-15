@@ -1,6 +1,6 @@
 from urlparse import urlparse
 
-from push_content.models import ItemToPush
+from carrier_pigeon.models import ItemToPush
 
 
 def join_url_to_directory(url, directory):

@@ -1,12 +1,11 @@
 import logging
 
-from push_content import REGISTRY
-from push_content.models import ItemToPush
-from push_content.utils import join_url_to_directory
-from push_content.utils import duplicate_row
+from carrier_pigeon import REGISTRY
+from carrier_pigeon.models import ItemToPush
+from carrier_pigeon.utils import duplicate_row
 
 
-logger = logging.getLogger('django_push.facility')
+logger = logging.getLogger('carrier_pigeon.facility')
 
 
 def add_item_to_push(instance, rule_name):

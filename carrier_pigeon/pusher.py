@@ -2,9 +2,9 @@ import os
 import logging
 from ftplib import FTP
 
-from push_content.models import ItemToPush
+from carrier_pigeon.models import ItemToPush
 
-logger = logging.getLogger('push_content.pusher')
+logger = logging.getLogger('carrier_pigeon.pusher')
 
 
 def ftp_send(row, url, file_path):

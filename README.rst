@@ -1,9 +1,9 @@
-===================
-django-push-content
-===================
+=====================
+django-carrier-pigeon
+=====================
 
-Kesako django-push-content ?
-============================
+Kesako ?
+========
 
 django-push-content helps to send content over the internet based on
 rules that are defined in your project. It's used at liberation.fr to
@@ -11,16 +11,16 @@ keep our up-to-date about the content available on the website.
 
 This applications comes with three commands:
 
-- push : pushes items until the end
-- clean_push_queue : cleans the queue from already pushed items. It's
-  configured with PUSH_CONTENT_MAX_AGE
-- clean_export_files : cleans the export file directory from old files.
-  It's configured with PUSH_CONTENT_MAX_AGE
+- ``push`` : pushes items until the end
+- ``clean_push_queue`` : cleans the queue from already pushed items. It's
+  configured with ``CARRIER_PIGEON_MAX_AGE``
+- ``clean_export_files`` : cleans the export file directory from old files.
+  It's configured with ``CARRIER_PIGEON_MAX_AGE``
 
 Dependencies
 ============
 
- - django-extended-choices, liberation fork: https://github.com/liberation/django-extended-choices 
+ - ``django-extended-choices``, liberation fork: https://github.com/liberation/django-extended-choices 
 
 Supported push methods
 ======================
@@ -30,28 +30,28 @@ Supported push methods
 Setup
 =====
 
-Add push_content to INSTALLED_APPS in settings.py
+Add carrier_pigeon to ``INSTALLED_APPS`` in ``settings.py``
 
 configuration
 -------------
 
-You have to define 3 constants in settings.py of your project::
+You have to define 3 constants in ``settings.py`` of your project::
 
-  PUSH_CONTENT_MAX_AGE = 3600*24*30 # 30 days
-  PUSH_CONTENT_OUTPUT_DIRECTORY = os.path.join(SITE_ROOT, 'tmp', 'export') 
-  PUSH_CONTENT_MAX_PUSH_ATTEMPS = 5 
+  CARRIER_PIGEON_MAX_AGE = 3600*24*30 # 30 days
+  CARRIER_PIGEON_OUTPUT_DIRECTORY = os.path.join(SITE_ROOT, 'tmp', 'export') 
+  CARRIER_PIGEON_MAX_PUSH_ATTEMPS = 5 
 
 
 Add rules
 -------------
 
 First you have to inherit classes you want to be able to push with 
-``BasicDirtyFieldsMixin`` that you can find in ``push_content.models``. This class will give the ability to detect changed fields in a save process 
+``BasicDirtyFieldsMixin`` that you can find in ``carrier_pigeon.models``. This class will give the ability to detect changed fields in a save process 
 
 Then you have to configure rules. Configuration is done with python 
-class. You have to define a class in a file called ``push_content_config.py`` (for example) that looks like this one:: 
+class. You have to define a class in a file called ``carrier_pigeon_config.py`` (for example) that looks like this one:: 
 
-  from push_content import register
+  from carrier_pigeon import register
 
 
   class Test:
@@ -92,7 +92,7 @@ You have to setup a cron, preferably fcron, to run every x minutes after each
 run to execute ``push`` command.
 
 You can setup ``clean_push_queue`` & ``clean_export_files`` every now and them 
-to clean up database from fullfilled rules and removed old files from ``PUSH_CONTENT_OUTPUT_DIRECTORY``.
+to clean up database from fullfilled rules and removed old files from ``CARRIER_PIGEON_OUTPUT_DIRECTORY``.
 
 logging
 -------
