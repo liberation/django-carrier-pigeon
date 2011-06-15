@@ -34,7 +34,7 @@ class ItemToPush(models.Model):
                      ('PUSHED', 50, 'Pushed'),
                      # ERRORS SHOULD BE OVER 100
                      ('PUSH_ERROR', 110, 'Push error'),
-                     ('TEMPLATE_NOT_FOUND', 120, 'Template not found'),
+                     ('OUTPUT_GENERATION_ERROR', 120, 'Could not generate output file'),
                      ('SEND_ERROR', 130, 'Could not send file'),
                      ('FILTER_BY_INSTANCE_TYPE_ERROR', 140, 'Error in select during filter by instance type'),
                      ('FILTER_BY_UPDATES_ERROR', 150, 'Error in select during filter by updates'),

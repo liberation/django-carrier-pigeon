@@ -39,8 +39,8 @@ class DefaultConfiguration:
         return '%s_%s.xml' % (instance._meta.app_label.lower(),
                               instance._meta.module_name)
 
-    def output(self, row, instance):
-        rule_name = row.rule_name
+    def output(self, instance):
+        rule_name = self.name()
 
         # build template file path
         app_label = instance._meta.app_label.lower()
@@ -49,16 +49,7 @@ class DefaultConfiguration:
 
         template_path = 'push_content/%s/%s' % (rule_name, template_name)
 
-        # try to fetch template file
-        try:
-            template = loader.get_template(template_path)
-        except TemplateDoesNotExist:
-            message = 'Template %s does not exist' % template_path
-            logger.error(message)
-            row.status = ItemToPush.STATUS.TEMPLATE_NOT_FOUND
-            row.message = message
-            row.save()
-            return None
+        template = loader.get_template(template_path)
 
         context = self.get_extra_context(instance)
         context['object'] = instance
@@ -66,5 +57,8 @@ class DefaultConfiguration:
         output = template.render(context)
         return output
 
-    def is_candidate(self, row):  # ItemToPush instance
-        logger.debug('default is_candidate call: nothing done.')
+    def post_select(self, instance):
+        pass
+
+    def name(self):
+        return self.__class__.__name__.lower()

@@ -48,13 +48,19 @@ class Command(BaseCommand):
             rule_name = row.rule_name
             configuration = REGISTRY[rule_name]
 
-            object = row.content_object
+            instance = row.content_object
 
             # build output
-            output = configuration.output(row, object)
-
-            if output is None:  # error while generating output
-                logger.debug('nothing to send')
+            try:
+                output = configuration.output(instance)
+            except Exception, e:
+                message = 'Exception ``%s`` raised: %s ' % (
+                    e.__class__.__name__, e.message)
+                logger.error(message)
+                row.status = ItemToPush.STATUS.OUTPUT_GENERATION_ERROR
+                row.message = message
+                row.save()
+                logger.debug('nothing to push')
                 # setting up next loop iteration
                 row = get_first_row_in_queue()
                 if not row:
@@ -88,7 +94,7 @@ class Command(BaseCommand):
                 if not row:
                     return
                 continue
-            output_filename = configuration.get_output_filename(object)
+            output_filename = configuration.get_output_filename(instance)
 
             target_url = URL(row.target_url)
 

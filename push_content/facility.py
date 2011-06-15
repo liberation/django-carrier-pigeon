@@ -47,4 +47,4 @@ def add_item_to_push(instance, rule_name):
         row.save()
         logger.debug('Added item in the ItemToPush queue @ %s'
                      % target_url)
-        rule.is_candidate(row)
+        rule.post_select(instance)
