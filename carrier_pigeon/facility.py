@@ -20,5 +20,6 @@ def add_item_to_push(instance, rule_name):
         row = ItemToPush(rule_name=rule_name,
                          content_object=instance)
         row.save()
-        logger.debug('Added item in the ItemToPush queue @ %s')
+        logger.debug('Added item in the ItemToPush queue @ %s' % 
+                     row.pk)
         rule.post_select(instance)

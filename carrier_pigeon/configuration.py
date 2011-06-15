@@ -7,7 +7,7 @@ from django.template.base import TemplateDoesNotExist
 from carrier_pigeon.models import ItemToPush
 
 
-logger = logging.getLogger('push_content.configuration')
+logger = logging.getLogger('carrier_pigeon.configuration')
 
 
 class DefaultConfiguration:
@@ -54,7 +54,7 @@ class DefaultConfiguration:
         class_name = instance._meta.module_name
         template_name = '%s_%s.xml' % (app_label, class_name)
 
-        template_path = 'push_content/%s/%s' % (rule_name, template_name)
+        template_path = 'carrier_pigeon/%s/%s' % (rule_name, template_name)
 
         template = loader.get_template(template_path)
 
