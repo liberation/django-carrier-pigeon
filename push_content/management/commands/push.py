@@ -118,7 +118,7 @@ class Command(BaseCommand):
 
             target_directory = None
             try:
-                target_directory = row.get_directory(instance)
+                target_directory = rule.get_directory(instance)
             except Exception, e:
                 logger.error('error during ``get_directory``')
                 logger.error('catched exception message: %s' % e.message)
@@ -131,8 +131,8 @@ class Command(BaseCommand):
 
             for push_url in rule.push_urls:
                 target_url = join_url_to_directory(push_url, target_directory)
+                logger.debug('target url is ``%s``' % target_url)
                 target_url = URL(target_url)
-
 
                 # try to send
                 max_ = settings.PUSH_CONTENT_MAX_PUSH_ATTEMPS

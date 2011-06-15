@@ -14,36 +14,12 @@ def add_item_to_push(instance, rule_name):
     logger.debug('adding %s for %s config' % (instance, rule_name))
     rule = REGISTRY[rule_name]
 
-    try:
-        target_directory = rule.get_directory(instance)
-    except Exception, e:
-        logger.error('error during ``get_directory``')
-        logger.error('catched exception message: %s' % e.message)
-        row = ItemToPush(rule_name=rule_name,
-                         content_object=instance)
-        row.status = ItemToPush.STATUS.GET_DIRECTORY_ERROR
-        row.message = "%s: %s" % (e.__class__.__name__, e.message)
-        row.save()
-        return None
-
-    logger.debug('target directory is %s' % target_directory)
-
-    for push_url in rule.push_urls:
-        target_url = join_url_to_directory(push_url, target_directory)
-
-        logger.debug('target url is %s' % target_url)
-
-        # we check that there isn't already a row for that item
-        # in the queue
-
-        if duplicate_row(rule_name, instance):
-            # The item is already in the queue for this url
-            logger.debug('This item is already in the queue... skipping.')
-            continue
-
+    if duplicate_row(rule_name, instance):
+        # The item is already in the queue for this url
+        logger.debug('This item is already in the queue... skipping.')
+    else:
         row = ItemToPush(rule_name=rule_name,
                          content_object=instance)
         row.save()
-        logger.debug('Added item in the ItemToPush queue @ %s'
-                     % target_url)
+        logger.debug('Added item in the ItemToPush queue @ %s')
         rule.post_select(instance)
