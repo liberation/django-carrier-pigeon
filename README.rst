@@ -11,10 +11,10 @@ keep our up-to-date about the content available on the website.
 
 This applications comes with three commands:
 
-- ``push`` : pushes items until the end
-- ``clean_push_queue`` : cleans the queue from already pushed items. It's
+- ``pigeon_push`` : pushes items until the end
+- ``pigeon_clean_queue`` : cleans the queue from already pushed items. It's
   configured with ``CARRIER_PIGEON_MAX_AGE``
-- ``clean_export_files`` : cleans the export file directory from old files.
+- ``pigeon_clean_export`` : cleans the export file directory from old files.
   It's configured with ``CARRIER_PIGEON_MAX_AGE``
 
 Dependencies
@@ -30,7 +30,7 @@ Supported push methods
 Setup
 =====
 
-Add carrier_pigeon to ``INSTALLED_APPS`` in ``settings.py``
+Add ``carrier_pigeon`` to ``INSTALLED_APPS`` in ``settings.py``
 
 configuration
 -------------
@@ -38,23 +38,27 @@ configuration
 You have to define 3 constants in ``settings.py`` of your project::
 
   CARRIER_PIGEON_MAX_AGE = 3600*24*30 # 30 days
-  CARRIER_PIGEON_OUTPUT_DIRECTORY = os.path.join(SITE_ROOT, 'tmp', 'export') 
-  CARRIER_PIGEON_MAX_PUSH_ATTEMPS = 5 
+  CARRIER_PIGEON_OUTPUT_DIRECTORY = os.path.join(SITE_ROOT, 'tmp', 'export')
+  CARRIER_PIGEON_MAX_PUSH_ATTEMPS = 5
 
 
 Add rules
 -------------
 
-First you have to inherit classes you want to be able to push with 
-``BasicDirtyFieldsMixin`` that you can find in ``carrier_pigeon.models``. This class will give the ability to detect changed fields in a save process 
+First you have to inherit classes you want to be able to push with
+``BasicDirtyFieldsMixin`` that you can find in ``carrier_pigeon.models``.
+This class will give the ability to detect changed fields in a save process.
 
-Then you have to configure rules. Configuration is done with python 
-class. You have to define a class in a file called ``carrier_pigeon_config.py`` (for example) that looks like this one:: 
+Then you have to configure rules. Configuration is done with python
+class. You have to define a class in a file called 
+``carrier_pigeon_config.py`` that looks like this one:: 
+
 
   from carrier_pigeon import register
+  from carrier_pigeon.configuration import DefaultConfiguration
 
 
-  class Test:
+  class Test(DefaultConfiguration):
       push_urls = ('ftp://k689kl:s14s5t@localhost', )
 
       def filter_by_instance_type(self, instance):
@@ -78,7 +82,7 @@ class. You have to define a class in a file called ``carrier_pigeon_config.py`` 
 
   register(Test)
 
-Nota : you have to make sure that your file is loaded by Django, for example importing it in the ``__init__.py`` file of the project.
+Nota: you have to make sure that your file is loaded by Django, for example importing it in the ``__init__.py`` file of the project.
 
 The next step is to add templates for each export rule and each models you 
 want to export. For example a template for a model named ``Article`` from 
