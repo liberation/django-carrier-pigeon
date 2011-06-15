@@ -13,7 +13,7 @@ def wellformed_xml_validator(output):
     This check only the well-formedness.
     It's not a DTD based validation.
     """
-    parser = ParserCreate()
+    parser = ParserCreate("utf-8")
     # parser will raise an Exception if the output is not wellformed
-    parser.Parse(output)
+    parser.Parse(output.encode('utf-8'))
     return True
