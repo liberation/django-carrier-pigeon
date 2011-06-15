@@ -13,6 +13,7 @@ from push_content.models import BasicDirtyFieldsMixin
 
 
 def register(clazz):
+    """Register a class as a push content configuration"""
     logger = logging.getLogger('push_content.registry')
     name = clazz.__name__.lower()
     logger.debug('Registring ``%s`` rule.' % name)
@@ -20,7 +21,7 @@ def register(clazz):
 
 
 def load_models():
-    """returns models from installed apps that inherits
+    """Returns models from installed apps that inherits
     BasicDirtyFieldsMixin"""
     logger = logging.getLogger('push_content.init')
     logger.info('Start of configuration')

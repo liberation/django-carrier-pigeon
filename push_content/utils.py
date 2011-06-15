@@ -46,15 +46,14 @@ class URL:
             self.port = None
 
 
-def duplicate_row(rule_name, target_url, instance):
-    """Checks if there already is a row like this one."""
+def duplicate_row(rule_name, instance):
+    """Checks if there is already is a row like this one."""
     app_label = instance._meta.app_label
     model = instance._meta.module_name
     name = instance._meta.verbose_name
     id = instance.id
 
     query = ItemToPush.objects.filter(rule_name=rule_name,
-                                      target_url=target_url,
                                       status=ItemToPush.STATUS.NEW,
                                       content_type__app_label=app_label,
                                       content_type__model=model,

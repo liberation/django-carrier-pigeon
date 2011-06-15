@@ -6,6 +6,9 @@ from extended_choices import Choices
 
 
 class BasicDirtyFieldsMixin(object):
+    """Mixin class that stores modified attributes in ``_modified_attrs``.
+    ``modified_attrs`` is reset after save"""
+
     def __init__(self, *args, **kwargs):
         super(BasicDirtyFieldsMixin, self).__init__(*args, **kwargs)
         self._modified_attrs = None
@@ -43,7 +46,6 @@ class ItemToPush(models.Model):
                      ('VALIDATION_ERROR', 180, 'Failed validation'))
 
     rule_name = models.SlugField()
-    target_url = models.CharField(max_length=255)
 
     creation_date = models.DateTimeField(auto_now_add=True)
     last_push_attempts_date = models.DateTimeField(null=True)
@@ -59,6 +61,5 @@ class ItemToPush(models.Model):
     content_object = generic.GenericForeignKey('content_type', 'object_id')
 
     def __unicode__(self):
-        return '%s %s %s' % (self.rule_name,
-                             self.target_url,
-                             self.get_status_display())
+        return '%s %s' % (self.rule_name,
+                          self.get_status_display())

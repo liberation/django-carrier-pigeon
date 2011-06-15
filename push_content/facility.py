@@ -10,9 +10,9 @@ logger = logging.getLogger('django_push.facility')
 
 
 def add_item_to_push(instance, rule_name):
+    """Adds an item to ``ItemToPush`` table aka. push queue"""
     logger.debug('adding %s for %s config' % (instance, rule_name))
     rule = REGISTRY[rule_name]
-    rule_name = rule.__class__.__name__.lower()
 
     try:
         target_directory = rule.get_directory(instance)
@@ -36,14 +36,13 @@ def add_item_to_push(instance, rule_name):
         # we check that there isn't already a row for that item
         # in the queue
 
-        if duplicate_row(rule_name, target_url, instance):
+        if duplicate_row(rule_name, instance):
             # The item is already in the queue for this url
             logger.debug('This item is already in the queue... skipping.')
             continue
 
         row = ItemToPush(rule_name=rule_name,
-                          target_url=target_url,
-                          content_object=instance)
+                         content_object=instance)
         row.save()
         logger.debug('Added item in the ItemToPush queue @ %s'
                      % target_url)
