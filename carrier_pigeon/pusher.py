@@ -28,7 +28,7 @@ def ftp_send(row, url, file_path):
                 ftp.cwd(directory)
                 # permanent error, in case the directory does not exist
                 # ftplib raise a "generic" error_perm
-            except error_perm, e:
+            except error_perm:
                 ftp.mkd(directory)
                 # Don't catch the error now, in case the error_perm was for
                 # another reason
@@ -43,7 +43,7 @@ def ftp_send(row, url, file_path):
         return True
     except Exception, e:
         row.status = ItemToPush.STATUS.SEND_ERROR
-        row.message = 'ftp_senf: exception message: %s' % (e.message)
+        row.message = 'ftp_send: exception message: %s' % (e.message)
         row.save()
         return False
 
