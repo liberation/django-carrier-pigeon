@@ -51,17 +51,13 @@ class Command(BaseCommand):
             try:
                 output = rule.output(instance)
             except Exception, e:
+                logger.error('Exception during output generation')
                 message = 'Exception ``%s`` raised: %s ' % (
                     e.__class__.__name__, e.message)
                 logger.error(message)
                 row.status = ItemToPush.STATUS.OUTPUT_GENERATION_ERROR
                 row.message = message
                 row.save()
-                logger.debug('nothing to push')
-                # setting up next loop iteration
-                row = get_first_row_in_queue()
-                if not row:
-                    return
                 continue
 
             # validate output
