@@ -4,6 +4,8 @@ from django.template import Context
 from django.template import loader
 from django.template.base import TemplateDoesNotExist
 
+from django.conf import settings
+
 from carrier_pigeon.models import ItemToPush
 
 
@@ -19,7 +21,10 @@ class DefaultConfiguration:
     @property
     def push_urls(self):
         """Remote locations urls where to push content."""
-        raise NotImplementedError()
+        if hasattr(settings, 'CARRIER_PIGEON_PUSH_URLS'):
+            return settings.CARRIER_PIGEON_PUSH_URLS[self.name]
+        else:
+            return []
 
     @property
     def validators(self):
@@ -67,5 +72,6 @@ class DefaultConfiguration:
     def post_select(self, instance):
         pass
 
+    @property
     def name(self):
         return self.__class__.__name__.lower()

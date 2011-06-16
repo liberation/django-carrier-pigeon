@@ -58,8 +58,6 @@ class. You have to define a class in a file called
 
 
   class ExampleConfig(DefaultConfiguration):
-      push_urls = ('ftp://k689kl:s14s5t@localhost', )
-
       def filter_by_instance_type(self, instance):
           return (instance._meta.object_name in ['Article'] and
                   instance._meta.app_label in ['libe'])
@@ -80,10 +78,14 @@ class. You have to define a class in a file called
           return '/test/'
 
 
-In you ``settings.py`` or ``local_settings.py`` you have to add this class to
+In your ``settings.py`` or ``local_settings.py`` you have to add this class to
 ``CARRIER_PIGEON_CLASSES``. This settings works just like ``MIDDLEWARE_CLASSES``e::
 
   CARRIER_PIGEON_CLASSES = ('myproject.carrier_pigeon_config.ExampleConfig',)
+  CARRIER_PIGEON_PUSH_URLS = {'exampleconfig': ('ftp://my.example.com',)}
+
+See ``DefaultConfiguration`` class for more information on how to setup your 
+own configuration classes.
 
 Nota: you have to make sure that your file is loaded by Django, for example importing it in the ``__init__.py`` file of the project.
 
