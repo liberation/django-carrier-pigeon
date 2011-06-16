@@ -54,11 +54,10 @@ class. You have to define a class in a file called
 ``carrier_pigeon_config.py`` that looks like this one:: 
 
 
-  from carrier_pigeon import register
   from carrier_pigeon.configuration import DefaultConfiguration
 
 
-  class Test(DefaultConfiguration):
+  class ExampleConfig(DefaultConfiguration):
       push_urls = ('ftp://k689kl:s14s5t@localhost', )
 
       def filter_by_instance_type(self, instance):
@@ -80,7 +79,11 @@ class. You have to define a class in a file called
       def get_directory(self, instance):
           return '/test/'
 
-  register(Test)
+
+In you ``settings.py`` or ``local_settings.py`` you have to add this class to
+``CARRIER_PIGEON_CLASSES``. This settings works just like ``MIDDLEWARE_CLASSES``e::
+
+  CARRIER_PIGEON_CLASSES = ('myproject.carrier_pigeon_config.ExampleConfig',)
 
 Nota: you have to make sure that your file is loaded by Django, for example importing it in the ``__init__.py`` file of the project.
 
@@ -112,4 +115,4 @@ You will need to modify ``send`` function in ``pusher.py``
 TODO
 ----
 
- - make a register for addind custom push methods
+ - make a register for adding custom push methods
