@@ -47,6 +47,8 @@ class ItemToPush(models.Model):
 
     rule_name = models.SlugField()
 
+    push_url = models.CharField(max_length=300)
+
     creation_date = models.DateTimeField(auto_now_add=True)
     last_push_attempts_date = models.DateTimeField(null=True)
     push_attempts = models.PositiveIntegerField(default=0)

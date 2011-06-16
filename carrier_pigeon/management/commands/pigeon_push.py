@@ -9,19 +9,16 @@ from django.conf import settings
 from django.core.management.base import BaseCommand
 
 from carrier_pigeon.models import ItemToPush
-
 from carrier_pigeon.pusher import send
-
 from carrier_pigeon.utils import URL
 from carrier_pigeon.utils import join_url_to_directory
-
 from carrier_pigeon import REGISTRY
 
 
 logger = logging.getLogger('carrier_pigeon.command.push')
 
 
-def get_first_row_in_queue():
+def item_to_push_queue():
     """Get the first row in the queue that 
     can be processed"""
     try:
@@ -29,10 +26,9 @@ def get_first_row_in_queue():
         row = row.order_by('creation_date')
         row = row.filter(status=ItemToPush.STATUS.NEW)
         row = row[0]
-        return row
+        yield row
     except IndexError:
-        logger.debug('no more item to push')
-        return None
+        raise StopIteration
 
 
 class Command(BaseCommand):
@@ -40,14 +36,9 @@ class Command(BaseCommand):
     help = __doc__
 
     def handle(self, *args, **options):
-        row = get_first_row_in_queue()
-
-        if not row:
-            return  # there is no more rows to push
-
-        while True:
+        for row in item_to_push_queue():
             logger.debug('processing row id=%s, rule_name=%s' %
-                         (row.id, row.rule_name))
+                         (row.pk, row.rule_name))
             row.status = ItemToPush.STATUS.IN_PROGRESS
             row.save()
 
@@ -95,11 +86,9 @@ class Command(BaseCommand):
 
             if not validation:  # if one validator did not pass we
                                 # do no want to send the file
-                # setting up next loop iteration
-                row = get_first_row_in_queue()
-                if not row:
-                    return
+                logger.debug('the output was not validated')
                 continue
+
             output_filename = rule.get_output_filename(instance)
 
             # build output file path for archiving
@@ -120,37 +109,33 @@ class Command(BaseCommand):
             try:
                 target_directory = rule.get_directory(instance)
             except Exception, e:
+                msg = "%s: %s" % (e.__class__.__name__, e.message)
                 logger.error('error during ``get_directory``')
-                logger.error('catched exception message: %s' % e.message)
+                logger.error(msg)
                 row = ItemToPush(rule_name=rule_name,
                                  content_object=instance)
                 row.status = ItemToPush.STATUS.GET_DIRECTORY_ERROR
-                row.message = "%s: %s" % (e.__class__.__name__, e.message)
+                row.message = msg
                 row.save()
-                return None
+                continue
 
-            for push_url in rule.push_urls:
-                target_url = join_url_to_directory(push_url, target_directory)
-                logger.debug('target url is ``%s``' % target_url)
-                target_url = URL(target_url)
+            target_url = join_url_to_directory(row.push_url,
+                                               target_directory)
+            logger.debug('target url is ``%s``' % target_url)
+            target_url = URL(target_url)
 
-                # try to send
-                max_ = settings.CARRIER_PIGEON_MAX_PUSH_ATTEMPS
-                for push_attempt_num in xrange(max_):
-                    logger.debug('push attempt %s' % push_attempt_num)
-                    row.push_attempts += 1
-                    row.last_push_attempts_date = datetime.now()
+            # try to send
+            max_ = settings.CARRIER_PIGEON_MAX_PUSH_ATTEMPS
+            for push_attempt_num in xrange(max_):
+                logger.debug('push attempt %s' % push_attempt_num)
+                row.push_attempts += 1
+                row.last_push_attempts_date = datetime.now()
+                row.save()
+
+                if send(row, target_url, output_path):
+                    row.status = ItemToPush.STATUS.PUSHED
                     row.save()
-
-                    if send(row, target_url, output_path):
-                        row.status = ItemToPush.STATUS.PUSHED
-                        row.save()
-                        logger.debug('succeeded')
-                        break  # send succeded, exit the for-block
-                    else:
-                        logger.error('send failed')
-
-            # try to fetch a new row
-            row = get_first_row_in_queue()
-            if not row:
-                return
+                    logger.debug('succeeded')
+                    break  # send succeded, exit the for-block
+                else:
+                    logger.error('send failed')
