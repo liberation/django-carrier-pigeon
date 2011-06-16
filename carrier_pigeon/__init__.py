@@ -21,7 +21,7 @@ def register_config(clazz_module):
     module_path = '.'.join(module_path)
     module = __import__(module_path, globals(), locals(), [clazz_name], -1)
     instance = getattr(module, clazz_name)()
-    REGISTRY[instance.name()] = instance
+    REGISTRY[instance.name] = instance
     logger = logging.getLogger('carrier_pigeon.init')
     msg = 'Registred %s configuration from %s' % (clazz_name, module_path)
     logger.debug(msg)
