@@ -14,5 +14,5 @@ def wellformed_xml_validator(output):
     """
     parser = ParserCreate("utf-8")
     # parser will raise an Exception if the output is not wellformed
-    parser.Parse(output.encode('utf-8'))
+    parser.Parse(output)
     return True

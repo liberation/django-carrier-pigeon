@@ -67,7 +67,7 @@ class DefaultConfiguration:
         context['object'] = instance
         context = Context(context)
         output = template.render(context)
-        return output
+        return output.encode("utf-8")
 
     def post_select(self, instance):
         pass
