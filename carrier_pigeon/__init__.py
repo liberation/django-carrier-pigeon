@@ -27,10 +27,6 @@ def register_config(clazz_module):
     logger.debug(msg)
 
 
-for clazz_module in settings.CARRIER_PIGEON_CLASSES:
-    register_config(clazz_module)
-
-
 def subscribe_to_post_save(sender, **kwargs):
     if BasicDirtyFieldsMixin in sender.mro():
         logger = logging.getLogger('carrier_pigeon.init')
@@ -38,4 +34,11 @@ def subscribe_to_post_save(sender, **kwargs):
         logger.debug(msg)
         post_save.connect(select, sender=sender)
 
-class_prepared.connect(subscribe_to_post_save)
+
+if hasattr(settings, 'CARRIER_PIGEON_CLASSES'):
+    for clazz_module in settings.CARRIER_PIGEON_CLASSES:
+        register_config(clazz_module)
+
+    # if there is not classes pigeon is not really used by
+    # the project so we do not need to connect post_save
+    class_prepared.connect(subscribe_to_post_save)
