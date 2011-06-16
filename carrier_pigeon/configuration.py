@@ -52,7 +52,7 @@ class DefaultConfiguration:
                               instance._meta.module_name)
 
     def output(self, instance):
-        rule_name = self.name()
+        rule_name = self.name
 
         # build template file path
         app_label = instance._meta.app_label.lower()
