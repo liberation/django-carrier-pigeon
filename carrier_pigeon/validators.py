@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Validators are made to validate ouput. Validators must raise Exception if the 
+Validators are made to validate ouput. Validators must raise Exception if the
 output do not validate.
 """
 
