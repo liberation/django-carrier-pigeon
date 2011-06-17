@@ -11,7 +11,7 @@ logger = logging.getLogger('carrier_pigeon.select')
 
 
 def filter(rule_name, configuration, instance, created):
-    """Returns True if the partner configuration validates
+    """Returns True if the rule configuration validates
     this instance, False otherwise."""
     try:
         validation = configuration.filter_by_instance_type(instance)
