@@ -38,7 +38,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         for row in item_to_push_queue():
             logger.debug('processing row id=%s, rule_name=%s' %
-                         (row.pk, row.rule_name))
+                                                        (row.pk, row.rule_name))
             row.status = ItemToPush.STATUS.IN_PROGRESS
             row.save()
 
@@ -51,13 +51,13 @@ class Command(BaseCommand):
             try:
                 output = rule.output(instance)
             except Exception, e:
-                logger.error('Exception during output generation')
-                message = 'Exception ``%s`` raised: %s ' % (
-                    e.__class__.__name__, e.message)
-                logger.error(message)
+                message = u"Exception during output generation. "
+                message += u'Exception ``%s`` raised: %s ' % (
+                                e.__class__.__name__, e.message.encode("utf-8"))
                 row.status = ItemToPush.STATUS.OUTPUT_GENERATION_ERROR
                 row.message = message
                 row.save()
+                logger.error(message)
                 continue
 
             # validate output
@@ -66,18 +66,18 @@ class Command(BaseCommand):
                 try:
                     validator(output)
                     logger.debug('validation ``%s`` passed successfully'
-                                 % validator.__name__)
+                                                           % validator.__name__)
                 except Exception, e:
                     validation = False
-                    logger.debug('validation ``%s`` failed !')
-                    message = 'catched exception %s : %s' % (
-                        e.__class__.__name__, e.message)
-                    logger.debug(message)
+                    message = u"Validation ``%s`` failed ! " % validator.__name__
+                    message += u'Catched exception %s : %s' % (
+                                e.__class__.__name__, e.message.encode("utf-8"))
                     row.status = ItemToPush.STATUS.VALIDATION_ERROR
                     if row.message != None:
                         row.message += '\n' + message
                     else:
                         row.message = message
+                    logger.error(message)
                     row.save()
 
             if not validation:  # if one validator did not pass we
@@ -92,14 +92,15 @@ class Command(BaseCommand):
             try:
                 target_directory = rule.get_directory(instance)
             except Exception, e:
-                msg = "%s: %s" % (e.__class__.__name__, e.message)
-                logger.error('error during ``get_directory``')
-                logger.error(msg)
+                message = u"Error during ``get_directory``. "
+                message += u"%s: %s" % (
+                                e.__class__.__name__, e.message.encode("utf-8"))
                 row = ItemToPush(rule_name=rule_name,
                                  content_object=instance)
                 row.status = ItemToPush.STATUS.GET_DIRECTORY_ERROR
-                row.message = msg
+                row.message = message
                 row.save()
+                logger.error(message)
                 continue
 
             # build output file path for archiving
