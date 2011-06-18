@@ -65,3 +65,12 @@ class ItemToPush(models.Model):
     def __unicode__(self):
         return '%s %s' % (self.rule_name,
                           self.get_status_display())
+    
+    def reset(self):
+        """
+        Change this is item as a new.
+        The item will be processed again.
+        """
+        self.status = self.STATUS.NEW
+        self.message = u""
+        self.save()
