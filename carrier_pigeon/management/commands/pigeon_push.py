@@ -53,7 +53,7 @@ class Command(BaseCommand):
             except Exception, e:
                 message = u"Exception during output generation. "
                 message += u'Exception ``%s`` raised: %s ' % (
-                                e.__class__.__name__, e.message.encode("utf-8"))
+                                e.__class__.__name__, e.message.decode("utf-8"))
                 row.status = ItemToPush.STATUS.OUTPUT_GENERATION_ERROR
                 row.message = message
                 row.save()
@@ -71,7 +71,7 @@ class Command(BaseCommand):
                     validation = False
                     message = u"Validation ``%s`` failed ! " % validator.__name__
                     message += u'Catched exception %s : %s' % (
-                                e.__class__.__name__, e.message.encode("utf-8"))
+                                e.__class__.__name__, e.message.decode("utf-8"))
                     row.status = ItemToPush.STATUS.VALIDATION_ERROR
                     if row.message != None:
                         row.message += '\n' + message
@@ -94,7 +94,7 @@ class Command(BaseCommand):
             except Exception, e:
                 message = u"Error during ``get_directory``. "
                 message += u"%s: %s" % (
-                                e.__class__.__name__, e.message.encode("utf-8"))
+                                e.__class__.__name__, e.message.decode("utf-8"))
                 row = ItemToPush(rule_name=rule_name,
                                  content_object=instance)
                 row.status = ItemToPush.STATUS.GET_DIRECTORY_ERROR
