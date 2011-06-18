@@ -84,23 +84,10 @@ class Command(BaseCommand):
                                 # do no want to send the file
                 logger.debug('the output was not validated')
                 continue
-
+            
             output_filename = rule.get_output_filename(instance)
-
-            # build output file path for archiving
-            output_directory = settings.CARRIER_PIGEON_OUTPUT_DIRECTORY
-            output_directory += '/%s/' % rule_name
-
-            # create output_directory if it doesn't exists
-            if not os.path.exists(output_directory):
-                os.makedirs(output_directory)
-            output_path = '%s/%s' % (output_directory, output_filename)
-
-            # write output file
-            f = open(output_path, 'w')
-            f.write(output)
-            f.close()
-
+            
+            # Get remote target directory (used also in archiving)
             target_directory = None
             try:
                 target_directory = rule.get_directory(instance)
@@ -115,6 +102,24 @@ class Command(BaseCommand):
                 row.save()
                 continue
 
+            # build output file path for archiving
+            output_directory = settings.CARRIER_PIGEON_OUTPUT_DIRECTORY
+            output_directory += '/%s/' % rule_name
+            output_directory += '/%s/' % target_directory
+
+            # create output_directory if it doesn't exists
+            if not os.path.exists(output_directory):
+                os.makedirs(output_directory)
+            output_path = '%s/%s' % (output_directory, output_filename)
+
+            # write output file
+            f = open(output_path, 'w')
+            f.write(output)
+            f.close()
+            
+            # End of archiving
+            
+            # Prepare sending
             target_url = join_url_to_directory(row.push_url,
                                                target_directory)
             logger.debug('target url is ``%s``' % target_url)
