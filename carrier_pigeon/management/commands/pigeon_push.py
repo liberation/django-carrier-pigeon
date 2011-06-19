@@ -21,14 +21,15 @@ logger = logging.getLogger('carrier_pigeon.command.push')
 def item_to_push_queue():
     """Get the first row in the queue that 
     can be processed"""
-    try:
-        row = ItemToPush.objects.all()
-        row = row.order_by('creation_date')
-        row = row.filter(status=ItemToPush.STATUS.NEW)
-        row = row[0]
+    while True:
+        qs = ItemToPush.objects.all()
+        qs = qs.order_by('creation_date')
+        qs = qs.filter(status=ItemToPush.STATUS.NEW)
+        try:
+            row = qs[0]
+        except IndexError:
+            raise StopIteration
         yield row
-    except IndexError:
-        raise StopIteration
 
 
 class Command(BaseCommand):
