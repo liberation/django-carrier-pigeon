@@ -49,7 +49,7 @@ def ftp_send(row, url, file_path):
 
 def dummy_send(row, url, file_path):
     """
-    Dummy sender to use for tests and developpement phasis.
+    Dummy sender to use for tests and developpement phases.
     """
     return True
 
