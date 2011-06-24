@@ -18,7 +18,7 @@ def ftp_send(row, url, file_path):
         else:
             url.login()
         
-        # Path should not end with a trailing /
+        # Path should not end with a /
         path = url.path
         if path.endswith("/"):
             path = url.path[:-1]
@@ -47,9 +47,16 @@ def ftp_send(row, url, file_path):
         row.save()
         return False
 
+def dummy_send(row, url, file_path):
+    """
+    Dummy sender to use for tests and developpement phasis.
+    """
+    return True
 
 def send(row, url, file_path):
     """dispactch send according to url scheme"""
     if url.scheme == 'ftp':
         return ftp_send(row, url, file_path)
-    logger.error('url shceme %s not supported' % url.scheme)
+    if url.scheme == 'dummy':
+        return dummy_send(row, url, file_path)
+    logger.error('url scheme %s not supported' % url.scheme)
