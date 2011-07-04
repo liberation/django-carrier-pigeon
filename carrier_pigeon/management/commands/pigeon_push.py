@@ -24,11 +24,12 @@ def item_to_push_queue():
     
     Retrieve rows in queue.
     """
+    limit = getattr(settings, "CARRIER_SELECT_LIMIT", 10)
     while True:
         qs = ItemToPush.objects.all()
         qs = qs.order_by('creation_date')
         qs = qs.filter(status=ItemToPush.STATUS.NEW)
-        rows = qs[:10]
+        rows = qs[:limit]
         if len(rows) == 0:
             return
         for row in rows:
