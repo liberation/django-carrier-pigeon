@@ -10,7 +10,7 @@ logger = logging.getLogger('carrier_pigeon.pusher')
 def ftp_send(row, url, file_path):
     """Sends the file by ftp using information found in url."""
     try:
-        ftp = FTP()
+        ftp = FTP(timeout=30)
         ftp.connect(url.domain, url.port)
 
         if url.login:
