@@ -62,7 +62,7 @@ class Command(BaseCommand):
                 row.status = ItemToPush.STATUS.OUTPUT_GENERATION_ERROR
                 row.message = message
                 row.save()
-                logger.error(message)
+                logger.error(message, exc_info=True)
                 continue
 
             # validate output
@@ -82,7 +82,7 @@ class Command(BaseCommand):
                         row.message += '\n' + message
                     else:
                         row.message = message
-                    logger.error(message)
+                    logger.error(message, exc_info=True)
                     row.save()
 
             if not validation:  # if one validator did not pass we
@@ -105,7 +105,7 @@ class Command(BaseCommand):
                 row.status = ItemToPush.STATUS.GET_DIRECTORY_ERROR
                 row.message = message
                 row.save()
-                logger.error(message)
+                logger.error(message, exc_info=True)
                 continue
 
             # build output file path for archiving
