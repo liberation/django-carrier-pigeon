@@ -21,9 +21,10 @@ class DefaultConfiguration:
     @property
     def push_urls(self):
         """Remote locations urls where to push content."""
-        if hasattr(settings, 'CARRIER_PIGEON_PUSH_URLS'):
+        try:
             return settings.CARRIER_PIGEON_PUSH_URLS[self.name]
-        else:
+        except (AttributeError, KeyError):
+            logger.warning(u'No push url setted for rule "%s"' % self.name)
             return []
 
     @property

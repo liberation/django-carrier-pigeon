@@ -4,6 +4,8 @@ from django.contrib.contenttypes import generic
 
 from extended_choices import Choices
 
+from carrier_pigeon.managers import BaseManager
+
 
 class BasicDirtyFieldsMixin(object):
     """Mixin class that stores modified attributes in ``_modified_attrs``.
@@ -46,22 +48,32 @@ class ItemToPush(models.Model):
                      ('VALIDATION_ERROR', 180, 'Failed validation'))
 
     rule_name = models.SlugField()
-
     push_url = models.CharField(max_length=300)
-
     creation_date = models.DateTimeField(auto_now_add=True)
     last_push_attempts_date = models.DateTimeField(null=True)
     push_attempts = models.PositiveIntegerField(default=0)
-
     status = models.PositiveIntegerField(choices=STATUS.CHOICES,
                                          default=STATUS.NEW)
     message = models.TextField()
-
-    #item to push
+    
+    # Item to push
     content_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField()
     content_object = generic.GenericForeignKey('content_type', 'object_id')
-
+    
+    # Managers
+    objects = BaseManager()
+    
+    
     def __unicode__(self):
         return '%s %s' % (self.rule_name,
                           self.get_status_display())
+    
+    def reset(self):
+        """
+        Change this is item as a new.
+        The item will be processed again.
+        """
+        self.status = self.STATUS.NEW
+        self.message = u""
+        self.save()

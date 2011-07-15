@@ -19,16 +19,21 @@ logger = logging.getLogger('carrier_pigeon.command.push')
 
 
 def item_to_push_queue():
-    """Get the first row in the queue that 
-    can be processed"""
-    try:
-        row = ItemToPush.objects.all()
-        row = row.order_by('creation_date')
-        row = row.filter(status=ItemToPush.STATUS.NEW)
-        row = row[0]
-        yield row
-    except IndexError:
-        raise StopIteration
+    """
+    Generator.
+    
+    Retrieve rows in queue.
+    """
+    limit = getattr(settings, "CARRIER_SELECT_LIMIT", 10)
+    while True:
+        qs = ItemToPush.objects.all()
+        qs = qs.order_by('creation_date')
+        qs = qs.filter(status=ItemToPush.STATUS.NEW)
+        rows = qs[:limit]
+        if len(rows) == 0:
+            return
+        for row in rows:
+            yield row
 
 
 class Command(BaseCommand):
@@ -37,8 +42,8 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         for row in item_to_push_queue():
-            logger.debug('processing row id=%s, rule_name=%s' %
-                         (row.pk, row.rule_name))
+            logger.debug(u'processing row id=%s, rule_name=%s' %
+                                                        (row.pk, row.rule_name))
             row.status = ItemToPush.STATUS.IN_PROGRESS
             row.save()
 
@@ -51,13 +56,13 @@ class Command(BaseCommand):
             try:
                 output = rule.output(instance)
             except Exception, e:
-                logger.error('Exception during output generation')
-                message = 'Exception ``%s`` raised: %s ' % (
-                    e.__class__.__name__, e.message)
-                logger.error(message)
+                message = u"Exception during output generation. "
+                message += u'Exception ``%s`` raised: %s ' % (
+                                e.__class__.__name__, e.message)
                 row.status = ItemToPush.STATUS.OUTPUT_GENERATION_ERROR
                 row.message = message
                 row.save()
+                logger.error(message, exc_info=True)
                 continue
 
             # validate output
@@ -66,30 +71,47 @@ class Command(BaseCommand):
                 try:
                     validator(output)
                     logger.debug('validation ``%s`` passed successfully'
-                                 % validator.__name__)
+                                                           % validator.__name__)
                 except Exception, e:
                     validation = False
-                    logger.debug('validation ``%s`` failed !')
-                    message = 'catched exception %s : %s' % (
-                        e.__class__.__name__, e.message)
-                    logger.debug(message)
+                    message = u"Validation ``%s`` failed ! " % validator.__name__
+                    message += u'Catched exception %s : %s' % (
+                                e.__class__.__name__, e.message)
                     row.status = ItemToPush.STATUS.VALIDATION_ERROR
                     if row.message != None:
                         row.message += '\n' + message
                     else:
                         row.message = message
+                    logger.error(message, exc_info=True)
                     row.save()
 
             if not validation:  # if one validator did not pass we
                                 # do no want to send the file
                 logger.debug('the output was not validated')
                 continue
-
+            
             output_filename = rule.get_output_filename(instance)
+            
+            # Get remote target directory (used also in archiving)
+            target_directory = None
+            try:
+                target_directory = rule.get_directory(instance)
+            except Exception, e:
+                message = u"Error during ``get_directory``. "
+                message += u"%s: %s" % (
+                                e.__class__.__name__, e.message)
+                row = ItemToPush(rule_name=rule_name,
+                                 content_object=instance)
+                row.status = ItemToPush.STATUS.GET_DIRECTORY_ERROR
+                row.message = message
+                row.save()
+                logger.error(message, exc_info=True)
+                continue
 
             # build output file path for archiving
             output_directory = settings.CARRIER_PIGEON_OUTPUT_DIRECTORY
             output_directory += '/%s/' % rule_name
+            output_directory += '/%s/' % target_directory
 
             # create output_directory if it doesn't exists
             if not os.path.exists(output_directory):
@@ -100,21 +122,10 @@ class Command(BaseCommand):
             f = open(output_path, 'w')
             f.write(output)
             f.close()
-
-            target_directory = None
-            try:
-                target_directory = rule.get_directory(instance)
-            except Exception, e:
-                msg = "%s: %s" % (e.__class__.__name__, e.message)
-                logger.error('error during ``get_directory``')
-                logger.error(msg)
-                row = ItemToPush(rule_name=rule_name,
-                                 content_object=instance)
-                row.status = ItemToPush.STATUS.GET_DIRECTORY_ERROR
-                row.message = msg
-                row.save()
-                continue
-
+            
+            # End of archiving
+            
+            # Prepare sending
             target_url = join_url_to_directory(row.push_url,
                                                target_directory)
             logger.debug('target url is ``%s``' % target_url)

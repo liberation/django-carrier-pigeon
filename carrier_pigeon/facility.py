@@ -10,7 +10,12 @@ logger = logging.getLogger('carrier_pigeon.facility')
 def add_item_to_push(instance, rule_name):
     """Adds an item to ``ItemToPush`` table aka. push queue"""
     logger.debug('adding %s for %s config' % (instance, rule_name))
-    rule = REGISTRY[rule_name]
+    try:
+        rule = REGISTRY[rule_name]
+    except KeyError:
+        logger.warning(u'Asked rule "%s" does not exist (instance : %s %d)'
+                        % (rule_name, instance.__class__.__name__, instance.pk))
+        return
 
     if duplicate_row(rule_name, instance):
         # The item is already in the queue for this url
@@ -23,4 +28,4 @@ def add_item_to_push(instance, rule_name):
             row.save()
             logger.debug('Added item in the ItemToPush queue @ %s' %
                          row.pk)
-            rule.post_select(instance)
+        rule.post_select(instance)
