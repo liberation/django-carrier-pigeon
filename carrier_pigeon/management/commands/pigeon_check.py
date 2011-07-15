@@ -10,7 +10,12 @@ from carrier_pigeon.models import ItemToPush
 
 
 class Command(BaseCommand):
-    """Carrier pigeon health check"""
+    """Carrier pigeon health check
+
+    it returns exit code 0 if everything is OK.
+    it returns exit code *2* if there are new items 30 minutes old or more
+    it returns exit code *1* if there are new items 10 minutes old or more but
+    less that 30 minutes"""
     help = __doc__
 
     def handle(self, *args, **options):
