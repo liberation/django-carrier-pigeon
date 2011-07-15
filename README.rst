@@ -85,8 +85,7 @@ class. You have to define a class in a file called
           return '/test/'
 
 
-In your ``settings.py`` or ``local_settings.py`` you have to add this class to
-``CARRIER_PIGEON_CLASSES``::
+In your ``settings.py`` or ``local_settings.py`` you have to add these contants::
 
   CARRIER_PIGEON_CLASSES = ('myproject.carrier_pigeon_config.ExampleConfig',)
   CARRIER_PIGEON_PUSH_URLS = {'exampleconfig': ('ftp://my.example.com',)}
@@ -94,12 +93,11 @@ In your ``settings.py`` or ``local_settings.py`` you have to add this class to
 See ``DefaultConfiguration`` class for more information on how to setup your 
 own configuration classes.
 
-Nota: you have to make sure that your file is loaded by Django, for example importing it in the ``__init__.py`` file of the project.
-
-The next step is to add templates for each export rule and each models you 
-want to export. For example a template for a model named ``Article`` from 
-an app named ``libe`` for the export rule ``Test``, the template should be in 
-the template path ``export/test/libe_article.xml``.
+If you did not overided other method from ``DefaultConfiguration``, the next step 
+is to add templates for each export rule and each models you  want to export. 
+For example a template for a model named ``Article`` from an app named ``libe`` 
+for the export rule ``Test``, the template should be in the template path 
+``export/test/libe_article.xml``.
 
 cron
 ----
