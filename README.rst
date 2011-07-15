@@ -16,6 +16,11 @@ This applications comes with three commands:
   configured with ``CARRIER_PIGEON_MAX_AGE``
 - ``pigeon_clean_export`` : cleans the export file directory from old files.
   It's configured with ``CARRIER_PIGEON_MAX_AGE``
+- ``pigeon_check`` is provided to check now and then that ItemToPush objects
+  are corectly processed by the ``pigeon_push`` command. Check out the ``pigeon_check.py``
+  file inside ``./management/commands/`` for more information about how it works.
+  If you plan on using this command you have to setup two additionnal settings:
+  ``CARRIER_PIGEON_CHECK_OLD_AGE`` & ``CARRIER_PIGEON_CHECK_TOO_OLD_AGE``.
 
 Dependencies
 ============
