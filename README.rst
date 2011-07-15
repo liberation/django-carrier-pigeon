@@ -103,7 +103,7 @@ cron
 ----
 
 You have to setup a cron, preferably fcron, to run every x minutes after each 
-run to execute ``push`` command.
+run to execute ``pigeon_push`` command.
 
 You can setup ``clean_push_queue`` & ``clean_export_files`` every now and them 
 to clean up database from fullfilled rules and removed old files from ``CARRIER_PIGEON_OUTPUT_DIRECTORY``.
