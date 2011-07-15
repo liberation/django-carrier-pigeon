@@ -133,6 +133,7 @@ class Command(BaseCommand):
 
             # try to send
             max_ = settings.CARRIER_PIGEON_MAX_PUSH_ATTEMPS
+            sent = False
             for push_attempt_num in xrange(max_):
                 logger.debug('push attempt %s' % push_attempt_num)
                 row.push_attempts += 1
@@ -143,6 +144,8 @@ class Command(BaseCommand):
                     row.status = ItemToPush.STATUS.PUSHED
                     row.save()
                     logger.debug('succeeded')
+                    sent = True
                     break  # send succeded, exit the for-block
-                else:
-                    logger.error('send failed')
+            if sent == False:
+                logger.error(u'Send failed for "%s" after %d attempts' % 
+                                                           (unicode(row), max_))
