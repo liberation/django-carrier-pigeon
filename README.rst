@@ -5,11 +5,11 @@ django-carrier-pigeon
 Kesako ?
 ========
 
-django-push-content helps to send content over the internet based on
+django-carrier-pigeon helps to send content over the internet based on
 rules that are defined in your project. It's used at liberation.fr to
-keep our up-to-date about the content available on the website.
+keep some partners up-to-date about the content available on the website.
 
-This applications comes with three commands:
+This applications comes with several commands:
 
 - ``pigeon_push`` : pushes items until the end
 - ``pigeon_clean_queue`` : cleans the queue from already pushed items. It's
@@ -30,7 +30,9 @@ Dependencies
 Supported push methods
 ======================
 
+- dummy (for testing purpose)
 - ftp
+
 
 Setup
 =====
@@ -51,12 +53,12 @@ Add rules
 -------------
 
 First you have to inherit classes you want to be able to push with
-``BasicDirtyFieldsMixin`` that you can find in ``carrier_pigeon.models``.
-This class will give the ability to detect changed fields in a save process.
+``carrier_pigeon.models.BasicDirtyFieldsMixin``. This class will give
+the ability to detect changed fields in a save process.
 
 Then you have to configure rules. Configuration is done with python
 class. You have to define a class in a file called 
-``carrier_pigeon_config.py`` that looks like this one:: 
+``carrier_pigeon_config.py``. Here is an example configuration class:: 
 
 
   from carrier_pigeon.configuration import DefaultConfiguration
@@ -84,7 +86,7 @@ class. You have to define a class in a file called
 
 
 In your ``settings.py`` or ``local_settings.py`` you have to add this class to
-``CARRIER_PIGEON_CLASSES``. This settings works just like ``MIDDLEWARE_CLASSES``e::
+``CARRIER_PIGEON_CLASSES``::
 
   CARRIER_PIGEON_CLASSES = ('myproject.carrier_pigeon_config.ExampleConfig',)
   CARRIER_PIGEON_PUSH_URLS = {'exampleconfig': ('ftp://my.example.com',)}
@@ -112,7 +114,7 @@ logging
 -------
 
 You can configure to receive emails when the app logs errors to easly keep an 
-eye on the if the job is done correctly.
+eye on pigeon_push.
 
 How to add a push method
 ------------------------
