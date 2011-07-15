@@ -24,13 +24,15 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         now = datetime.now()
+        CARRIER_PIGEON_CHECK_OLD_AGE = getattr(settings.CARRIER_PIGEON_CHECK_OLD_AGE, 10*60) # 10 mins
 
-        min30 = timedelta(seconds=settings.CARRIER_PIGEON_CHECK_OLD_AGE)
+        min30 = timedelta(seconds=CARRIER_PIGEON_CHECK_OLD_AGE)
         min30_count = ItemToPush.objects.filter(creation_date__lt=now-min30,
                                                 status=ItemToPush.STATUS.NEW).count()
         if min30_count > 0:
             sys.exit(2)
 
+        CARRIER_PIGEON_CHECK_TOO_OLD_AGE = getattr(settings, CARRIER_PIGEON_CHECK_TOO_OLD_AGE, 30*60) # 60 mins
         min10 = timedelta(seconds=settings.CARRIER_PIGEON_CHECK_TOO_OLD_AGE)
         min10_count = ItemToPush.objects.filter(creation_date__lt=now-min10,
                                                 status=ItemToPush.STATUS.NEW).count()
