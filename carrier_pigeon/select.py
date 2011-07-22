@@ -20,7 +20,7 @@ def filter(rule_name, configuration, instance, created):
         logger.error('catched exception message: %s' % e.message)
         row = ItemToPush(rule_name=rule_name,
                          content_object=instance)
-        row.status = ItemToPush.STATUS.FILTER_BY_INSTANCE_TYPE
+        row.status = ItemToPush.STATUS.FILTER_BY_INSTANCE_TYPE_ERROR
         row.message = "%s: %s" % (e.__class__.__name__, e.message)
         row.save()
         return False
