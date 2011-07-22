@@ -24,14 +24,22 @@ class BaseManager(django_models.Manager):
         return self.get_query_set().failed()
         
 constants = [c for c in dir(models.ITEM_TO_PUSH_STATUS) if c not in NOT_CONSTANTS]
-for constant in constants:
-    method_name = constant.lower()
-    def filter_by_status(self):
-        return self.filter(status = getattr(models.ITEM_TO_PUSH_STATUS, constant))
-    def query_by_status(self):
-        method = getattr(self.get_query_set(), constant)
-        return method()
+for current_constant in constants:
+    method_name = current_constant.lower()
+    def get_filter_function(constant):
+        def filter_by_status(self):
+            value = getattr(models.ITEM_TO_PUSH_STATUS, constant)
+            return self.filter(status=value)
+        return filter_by_status
+    filter_by_status = get_filter_function(current_constant)
     filter_by_status_method = instancemethod(filter_by_status, None, BaseQuerySet)
-    query_by_status_method = instancemethod(filter_by_status, None, BaseManager)
     setattr(BaseQuerySet, method_name, filter_by_status_method)
+
+    def get_query_function(name):
+        def query_by_status(self):
+            method = getattr(self.get_query_set(), name)
+            return method()
+        return query_by_status
+    query_by_status = get_query_function(method_name)
+    query_by_status_method = instancemethod(query_by_status, None, BaseManager)
     setattr(BaseManager, method_name, query_by_status_method)
