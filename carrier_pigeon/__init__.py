@@ -18,7 +18,7 @@ def add_instance(instance, clazz_path=None):
     global REGISTRY
     REGISTRY[instance.name] = instance
     logger = logging.getLogger('carrier_pigeon.init')
-    msg = 'Registred %s' % clazz_name if clazz_path is not None else instance.__class__.__name__.lower()
+    msg = 'Registred %s' % clazz_path if clazz_path is not None else instance.__class__.__name__.lower()
     logger.debug(msg)
 
 
