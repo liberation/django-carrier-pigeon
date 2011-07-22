@@ -9,7 +9,7 @@ from carrier_pigeon.configuration import DefaultConfiguration
 from carrier_pigeon.models import BasicDirtyFieldsMixin, ItemToPush
 from carrier_pigeon.select import select
 
-class Test(DefaultConfiguration):
+class TestConfiguration(DefaultConfiguration):
     push_urls = ('ftp://foo.bar.baz',)
 
     def filter_by_instance_type(self, instance):
@@ -22,27 +22,56 @@ class Test(DefaultConfiguration):
         return True
 
     def get_directory(self, instance):
-        return ''
+        return 'foo/bar/baz'
 
 
-add_instance(Test())
+add_instance(TestConfiguration())
+
+
+class TestFilterByInstanceTypeFalse(TestConfiguration):
+    def filter_by_instance_type(self, instance):
+        return False
+
+add_instance(TestFilterByInstanceTypeFalse())
+
+
+class TestFilterByUpdatesFalse(TestConfiguration):
+    def filter_by_updates(self, instance):
+        return False
+
+
+add_instance(TestFilterByUpdatesFalse())
+
+
+class TestFilterByStateFalse(TestConfiguration):
+    def filter_by_state(self, instance):
+        return False
+
+add_instance(TestFilterByStateFalse())
 
 
 class Dummy(models.Model, BasicDirtyFieldsMixin):
     foo = models.IntegerField()
-
-
 post_save.connect(select, sender=Dummy)
 
 
+class ManagerTest(TestCase):
+    # FIXME: the manager is rather complex due to fact that we dynamically add 
+    # methods to it, it should be fair to document how to use it here
+    pass
+
 class AddToQueueTest(TestCase):
     def test_add_to_queue(self):
+        """This actually also tests that the filtering is corretly done
+        through the presence of enough carrier pigeon configuration classes
+        in the registry. see :class:Test, :class:TestFilterByInstanceTypeFalse,
+        :class:TestFilterByUpdatesFalse, :class:TestFilterByStateFalse"""
         dummy = Dummy(foo=1)
         dummy.save()
         
-        qs = ItemToPush.objects.all()
+        qs = ItemToPush.objects.new()
         count = qs.count()
         
         self.assertEqual(count, 1)
         item = qs[0]
-        self.assertEqual(item.status, ItemToPush.STATUS.NEW)    
+        self.assertEqual(item.status, ItemToPush.STATUS.NEW)
