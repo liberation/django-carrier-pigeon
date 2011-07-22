@@ -62,3 +62,13 @@ def duplicate_row(rule_name, instance):
     count = query.count()
 
     return count > 0
+
+
+def get_instance(clazz_module):
+    module_path = clazz_module.split('.')
+    module_path, clazz_name = module_path[:-1], module_path[-1]
+    module_path = '.'.join(module_path)
+    module = __import__(module_path, globals(), locals(), [clazz_name], -1)
+    instance = getattr(module, clazz_name)()
+    return instance
+    
