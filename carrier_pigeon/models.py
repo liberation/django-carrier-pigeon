@@ -4,7 +4,24 @@ from django.contrib.contenttypes import generic
 
 from extended_choices import Choices
 
-from carrier_pigeon.managers import BaseManager
+
+ITEM_TO_PUSH_STATUS = Choices(('NEW', 10, 'New'),
+                              ('IN_PROGRESS', 20, 'In progress'),
+                              ('PUSHED', 50, 'Pushed'),
+                              # ERRORS SHOULD BE OVER 100
+                              ('PUSH_ERROR', 110, 'Push error'),
+                              ('OUTPUT_GENERATION_ERROR', 120, 'Could not generate output file'),
+                              ('SEND_ERROR', 130, 'Could not send file'),
+                              ('FILTER_BY_INSTANCE_TYPE_ERROR', 140, 'Error in select during filter by instance type'),
+                              ('FILTER_BY_UPDATES_ERROR', 150, 'Error in select during filter by updates'),
+                              ('FILTER_BY_STATE_ERROR', 160, 'Error in select during filter by state'),
+                              ('GET_DIRECTORY_ERROR', 170, 'Error in select during get directory'),
+                              ('VALIDATION_ERROR', 180, 'Failed validation'))
+
+
+import managers
+
+
 
 
 class BasicDirtyFieldsMixin(object):
@@ -31,21 +48,9 @@ class BasicDirtyFieldsMixin(object):
         super(BasicDirtyFieldsMixin, self).save(*args, **kwargs)
         self._reset_modified_attrs()
 
-
 class ItemToPush(models.Model):
     """Information about items that should be pushed."""
-    STATUS = Choices(('NEW', 10, 'New'),
-                     ('IN_PROGRESS', 20, 'In progress'),
-                     ('PUSHED', 50, 'Pushed'),
-                     # ERRORS SHOULD BE OVER 100
-                     ('PUSH_ERROR', 110, 'Push error'),
-                     ('OUTPUT_GENERATION_ERROR', 120, 'Could not generate output file'),
-                     ('SEND_ERROR', 130, 'Could not send file'),
-                     ('FILTER_BY_INSTANCE_TYPE_ERROR', 140, 'Error in select during filter by instance type'),
-                     ('FILTER_BY_UPDATES_ERROR', 150, 'Error in select during filter by updates'),
-                     ('FILTER_BY_STATE_ERROR', 160, 'Error in select during filter by state'),
-                     ('GET_DIRECTORY_ERROR', 170, 'Error in select during get directory'),
-                     ('VALIDATION_ERROR', 180, 'Failed validation'))
+    STATUS = ITEM_TO_PUSH_STATUS
 
     rule_name = models.SlugField()
     push_url = models.CharField(max_length=300)
@@ -62,7 +67,7 @@ class ItemToPush(models.Model):
     content_object = generic.GenericForeignKey('content_type', 'object_id')
     
     # Managers
-    objects = BaseManager()
+    objects = managers.BaseManager()
     
     
     def __unicode__(self):
@@ -77,3 +82,4 @@ class ItemToPush(models.Model):
         self.status = self.STATUS.NEW
         self.message = u""
         self.save()
+
