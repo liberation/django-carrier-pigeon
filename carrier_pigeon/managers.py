@@ -1,10 +1,10 @@
 from new import instancemethod
-from extended_choices import NOT_CONSTANTS
 
 import models
 
 from django.db import models as django_models
 
+NOT_CONSTANTS = ["CHOICES", "CHOICES_DICT", "REVERTED_CHOICES_DICT"]
 
 # BASE
 class BaseQuerySet(django_models.query.QuerySet):
@@ -23,7 +23,7 @@ class BaseManager(django_models.Manager):
     def failed(self):
         return self.get_query_set().failed()
         
-constants = [c for c in dir(models.ITEM_TO_PUSH_STATUS) if c not in NOT_CONSTANTS]
+constants = [c for c in dir(models.ITEM_TO_PUSH_STATUS) if c.isupper() and c not in NOT_CONSTANTS]
 for current_constant in constants:
     method_name = current_constant.lower()
     def get_filter_function(constant):
