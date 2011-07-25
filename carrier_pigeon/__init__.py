@@ -10,21 +10,21 @@ REGISTRY = {}
 
 
 from carrier_pigeon.select import select
-
 from carrier_pigeon.models import BasicDirtyFieldsMixin
+from carrier_pigeon.utils import get_instance
 
 
-def register_config(clazz_module):
+def add_instance(instance, clazz_path=None):
     global REGISTRY
-    module_path = clazz_module.split('.')
-    module_path, clazz_name = module_path[:-1], module_path[-1]
-    module_path = '.'.join(module_path)
-    module = __import__(module_path, globals(), locals(), [clazz_name], -1)
-    instance = getattr(module, clazz_name)()
     REGISTRY[instance.name] = instance
     logger = logging.getLogger('carrier_pigeon.init')
-    msg = 'Registred %s configuration from %s' % (clazz_name, module_path)
+    msg = 'Registred %s' % clazz_path if clazz_path is not None else instance.__class__.__name__.lower()
     logger.debug(msg)
+
+
+def register_config(clazz_path):
+    instance = get_instance(clazz_path)
+    add_instance(instance, clazz_path)
 
 
 def subscribe_to_post_save(sender, **kwargs):
