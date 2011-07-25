@@ -56,7 +56,7 @@ post_save.connect(select, sender=Dummy)
 
 
 class ManagerTest(TestCase):
-    # FIXME: the manager is rather complex due to fact that we dynamically add 
+    # FIXME: the manager is rather complex due to fact that we dynamically add
     # methods to it, it should be fair to document how to use it here
     pass
 
@@ -68,10 +68,10 @@ class AddToQueueTest(TestCase):
         :class:TestFilterByUpdatesFalse, :class:TestFilterByStateFalse"""
         dummy = Dummy(foo=1)
         dummy.save()
-        
+
         qs = ItemToPush.objects.new()
         count = qs.count()
-        
-        self.assertEqual(count, 1)
-        item = qs[0]
-        self.assertEqual(item.status, ItemToPush.STATUS.NEW)
+
+        self.assertEqual(count, 2)
+        for item in qs:
+            self.assertEqual(item.status, ItemToPush.STATUS.NEW)
