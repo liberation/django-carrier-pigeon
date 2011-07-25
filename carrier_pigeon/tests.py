@@ -75,3 +75,28 @@ class AddToQueueTest(TestCase):
         self.assertEqual(count, 2)
         for item in qs:
             self.assertEqual(item.status, ItemToPush.STATUS.NEW)
+
+    def test_add_to_queue_update(self):
+        """Test whether filter by updates is correctly handled"""
+        dummy = Dummy(foo=1)
+        dummy.save()
+
+        qs = ItemToPush.objects.new()
+        count = qs.count()
+
+        self.assertEqual(count, 2)
+        for item in qs:
+            self.assertEqual(item.status, ItemToPush.STATUS.NEW)
+
+        ItemToPush.objects.all().delete()
+
+        dummy = Dummy.objects.get(pk=dummy.pk)
+        dummy.foo = 2
+        dummy.save()
+
+        qs = ItemToPush.objects.new()
+        count = qs.count()
+
+        self.assertEqual(count, 1)
+        for item in qs:
+            self.assertEqual(item.status, ItemToPush.STATUS.NEW)
