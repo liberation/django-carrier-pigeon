@@ -34,7 +34,7 @@ class Command(BaseCommand):
             sys.exit(2)
 
 
-        min10 = timedelta(seconds=settings.CARRIER_PIGEON_CHECK_TOO_OLD_AGE)
+        min10 = timedelta(seconds=CARRIER_PIGEON_CHECK_TOO_OLD_AGE)
         min10_count = ItemToPush.objects.filter(creation_date__lt=now-min10,
                                                 status=ItemToPush.STATUS.NEW).count()
         if min10_count > 0:
