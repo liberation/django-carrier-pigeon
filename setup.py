@@ -2,13 +2,15 @@
 from os import path
 from distutils.core import setup
 
-with open(path.join(path.dirname(__file__), 'README.rst')) as f:
-    readmin = f.read()
+
+def read(fname):
+    return open(os.path.join(os.path.dirname(__file__), fname)).read()
+
 
 setup(name='django-carrier-pigeon',
       version='0.1',
       description='Django application that help pushing content to remote locations',
-      long_description=readme,
+      long_description=read('README.rst',
       author='Djaz Team',
       author_email='devweb@liberation.fr',
       url='https://github.com/liberation/django-push-content',
