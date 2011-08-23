@@ -1,4 +1,5 @@
 import logging
+from abc import abstractmethod
 
 from django.template import Context
 from django.template import loader
@@ -33,17 +34,21 @@ class DefaultConfiguration:
         that will be pushed."""
         return list()
 
+    @abstractmethod
     def filter_by_instance_type(self, instance):
-        raise NotImplementedError()
+        pass
 
+    @abstractmethod
     def filter_by_updates(self, instance):
-        raise NotImplementedError()
+        pass
 
+    @abstractmethod
     def filter_by_state(self, instance):
-        raise NotImplementedError()
+        pass
 
+    @abstractmethod
     def get_directory(self, instance):
-        raise NotImplementedError()
+        pass
 
     def get_extra_context(self, instance):
         return dict()
