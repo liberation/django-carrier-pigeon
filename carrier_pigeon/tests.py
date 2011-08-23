@@ -9,6 +9,7 @@ from carrier_pigeon.configuration import DefaultConfiguration
 from carrier_pigeon.models import BasicDirtyFieldsMixin, ItemToPush
 from carrier_pigeon.select import select
 
+
 class TestConfiguration(DefaultConfiguration):
     push_urls = ('ftp://foo.bar.baz',)
 
@@ -23,30 +24,24 @@ class TestConfiguration(DefaultConfiguration):
 
     def get_directory(self, instance):
         return 'foo/bar/baz'
-
-
 add_instance(TestConfiguration())
 
 
 class TestFilterByInstanceTypeFalse(TestConfiguration):
     def filter_by_instance_type(self, instance):
         return False
-
 add_instance(TestFilterByInstanceTypeFalse())
 
 
 class TestFilterByUpdatesFalse(TestConfiguration):
     def filter_by_updates(self, instance):
         return False
-
-
 add_instance(TestFilterByUpdatesFalse())
 
 
 class TestFilterByStateFalse(TestConfiguration):
     def filter_by_state(self, instance):
         return False
-
 add_instance(TestFilterByStateFalse())
 
 
@@ -63,7 +58,7 @@ class ManagerTest(TestCase):
         qs = ItemToPush.objects.new()
         count = qs.count()
 
-        self.assertEqual(count, 1)
+        self.assertEqual(count, 2)
 
     def test_new_filter_chainable(self):
         dummy = Dummy(foo=1)
@@ -72,7 +67,7 @@ class ManagerTest(TestCase):
         qs = ItemToPush.objects.new().new()
         count = qs.count()
 
-        self.assertEqual(count, 1)
+        self.assertEqual(count, 2)
 
     #FIXME: add tests for other choices
 
