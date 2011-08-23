@@ -56,9 +56,26 @@ post_save.connect(select, sender=Dummy)
 
 
 class ManagerTest(TestCase):
-    # FIXME: the manager is rather complex due to fact that we dynamically add
-    # methods to it, it should be fair to document how to use it here
-    pass
+    def test_new_filter(self):
+        dummy = Dummy(foo=1)
+        dummy.save()
+
+        qs = ItemToPush.objects.new()
+        count = qs.count()
+
+        self.assertEqual(count, 1)
+
+    def test_new_filter_chainable(self):
+        dummy = Dummy(foo=1)
+        dummy.save()
+
+        qs = ItemToPush.objects.new().new()
+        count = qs.count()
+
+        self.assertEqual(count, 1)
+
+    #FIXME: add tests for other choices
+
 
 class AddToQueueTest(TestCase):
     def test_add_to_queue(self):
@@ -69,7 +86,7 @@ class AddToQueueTest(TestCase):
         dummy = Dummy(foo=1)
         dummy.save()
 
-        qs = ItemToPush.objects.new()
+        qs = ItemToPush.objects.filter(status=ItemToPush.STATUS.NEW)
         count = qs.count()
 
         self.assertEqual(count, 2)
@@ -81,7 +98,7 @@ class AddToQueueTest(TestCase):
         dummy = Dummy(foo=1)
         dummy.save()
 
-        qs = ItemToPush.objects.new()
+        qs = ItemToPush.objects.filter(status=ItemToPush.STATUS.NEW)
         count = qs.count()
 
         self.assertEqual(count, 2)
@@ -100,3 +117,5 @@ class AddToQueueTest(TestCase):
         self.assertEqual(count, 1)
         for item in qs:
             self.assertEqual(item.status, ItemToPush.STATUS.NEW)
+
+
