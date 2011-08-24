@@ -2,3 +2,7 @@
 *.sqlite
 *~
 docs/build/
+build/
+dist/
+MANIFEST
+

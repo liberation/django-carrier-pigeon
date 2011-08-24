@@ -1,15 +1,17 @@
-.. Django Carrier Pigeon documentation master file, created by
-   sphinx-quickstart on Wed Aug 24 12:13:37 2011.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
 Welcome to Django Carrier Pigeon's documentation!
 =================================================
 
-Contents:
+Django Carrier Pigeon is an asynchronous task queue management application for
+Django. It was created at liberation.fr to manage content push, but can be used
+for a bunch of other things.
 
 .. toctree::
    :maxdepth: 2
+
+   getting_started
+   commands
+   internals
+
 
 Indices and tables
 ==================

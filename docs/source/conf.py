@@ -1,5 +1,10 @@
 # -*- coding: utf-8 -*-
-#
+
+from django.conf import settings
+
+
+settings.configure()
+
 # Django Carrier Pigeon documentation build configuration file, created by
 # sphinx-quickstart on Wed Aug 24 12:13:37 2011.
 #
@@ -254,3 +259,4 @@ epub_copyright = u'2011, Djaz Team'
 
 # Allow duplicate toc entries.
 #epub_tocdup = True
+
