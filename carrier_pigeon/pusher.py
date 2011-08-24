@@ -16,8 +16,8 @@ def ftp_send(row, url, file_path):
         if url.login:
             ftp.login(url.login, url.password)
         else:
-            url.login()
-        
+            ftp.login()
+
         # Path should not end with a /
         path = url.path
         if path.endswith("/"):
@@ -33,12 +33,13 @@ def ftp_send(row, url, file_path):
                 # Don't catch the error now, in case the error_perm was for
                 # another reason
                 ftp.cwd(directory)
-            
+
         filename = os.path.split(file_path)[1]
         f = open(file_path)
         ftp.storbinary('STOR %s' % filename, f)
-        f.close()
+        ftp.close()
         ftp.quit()
+        f.close()
         logger.debug('successfully pushed %s@%s' % (filename, url.url))
         return True
     except Exception, e:
@@ -60,3 +61,4 @@ def send(row, url, file_path):
     if url.scheme == 'dummy':
         return dummy_send(row, url, file_path)
     logger.error('url scheme %s not supported' % url.scheme)
+
