@@ -85,14 +85,15 @@ In your ``settings.py`` or ``local_settings.py`` you have to add theses constant
     CARRIER_PIGEON_OUTPUT_DIRECTORY = os.path.join(SITE_ROOT, 'tmp', 'export')
     CARRIER_PIGEON_MAX_PUSH_ATTEMPS = 5
 
-You have to create the directory ``tmp/export/`` at  the root of your project directory.
-In order to make this example work you need to have an ftp server running on your
-machine on port 21 with an account for an user with ``user`` as username & ``password`` as
-password.
+You have to create the directory structure ``tmp/export/`` at  the root of your
+project directory. In order to make this example work you need to have an ftp
+server running on your machine on port 21 with an account for an user with
+``user`` as username & ``password`` as password and file and directy creation
+rights.
 
-The file we send we be generated from a template the default location is
+The file we will send will be generated from a template the default location is
 ``carrier_pigeon/%(rule_name_in_lower_case)s/%(app_label)s_%(class_name)s.xml``,
-paste below template into the above file:
+paste below template into the created file:
 
 .. code-block:: xml
     :linenos:
@@ -105,4 +106,14 @@ paste below template into the above file:
         {{ object.content }}
       </content>
     </message>
+
+To test the configuration you have to use ``pigeon_push`` command::
+
+  $ python manage.py pigeon_push
+
+You can also check if the file was properly generated in
+``./tmp/export/messagepushconfiguration/test/wall_message.xml``.
+
+Congratulations you got the basics of carrier pigeon, you can now investigate
+the documentation, you might start by settings and commands.
 

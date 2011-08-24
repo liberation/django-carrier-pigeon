@@ -9,6 +9,7 @@ for a bunch of other things.
    :maxdepth: 2
 
    getting_started
+   settings
    commands
    internals
 
