@@ -4,8 +4,11 @@ from distutils.core import setup
 
 
 def read(fname):
-    return open(os.path.join(os.path.dirname(__file__), fname)).read()
-
+    file_path = os.path.join(os.path.dirname(__file__), fname)
+    if os.path.exists(file_path):
+        return open(file_path).read()
+    else:
+        return ''
 
 setup(name='django-carrier-pigeon',
       version='0.0',
