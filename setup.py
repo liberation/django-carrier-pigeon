@@ -9,7 +9,7 @@ def read(fname):
 
 setup(name='django-carrier-pigeon',
       version='0.1',
-      description='Django application that help pushing content to remote locations',
+      description='Django application for managing asynchronous task queue',
       long_description=read('README.rst'),
       author='Djaz Team',
       author_email='devweb@liberation.fr',
