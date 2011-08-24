@@ -1,5 +1,6 @@
 import os
 import logging
+import traceback
 from ftplib import FTP, error_perm
 
 from carrier_pigeon.models import ItemToPush
@@ -44,7 +45,8 @@ def ftp_send(row, url, file_path):
         return True
     except Exception, e:
         row.status = ItemToPush.STATUS.SEND_ERROR
-        row.message = 'ftp_send: exception message: %s' % (e.message)
+        row.message = 'ftp_send: exception message: %s\n' % (e.message)
+        row.message += traceback.extract_stack()
         row.save()
         return False
 
