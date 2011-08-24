@@ -11,11 +11,14 @@ def read(fname):
         return ''
 
 setup(name='django-carrier-pigeon',
-      version='0.0',
+      version='0.0.4',
       description='Django application for managing asynchronous task queue',
       long_description=read('README.rst'),
       author='Djaz Team',
       author_email='devweb@liberation.fr',
       url='https://github.com/liberation/django-push-content',
-      packages=['carrier_pigeon'],
+      packages=['carrier_pigeon',
+                'carrier_pigeon.management',
+                'carrier_pigeon.management.commands'],
      )
+
