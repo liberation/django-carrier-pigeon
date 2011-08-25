@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from os import path
+import os
 from distutils.core import setup
 
 
@@ -8,7 +8,7 @@ def read(fname):
 
 
 setup(name='django-carrier-pigeon',
-      version='0.1',
+      version='0.1.1',
       description='Django application that help pushing content to remote locations',
       long_description=read('README.rst'),
       author='Djaz Team',
