@@ -11,7 +11,7 @@ def read(fname):
         return ''
 
 setup(name='django-carrier-pigeon',
-      version='0.0.4',
+      version='0.0',
       description='Django application for managing asynchronous task queue',
       long_description=read('README.rst'),
       author='Djaz Team',
