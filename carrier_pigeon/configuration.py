@@ -54,8 +54,9 @@ class DefaultConfiguration:
         return dict()
 
     def get_output_filename(self, instance):
-        return '%s_%s.xml' % (instance._meta.app_label.lower(),
-                              instance._meta.module_name)
+        return '%s_%s_%s.xml' % (instance._meta.app_label.lower(),
+                                 instance._meta.module_name,
+                                 instance.pk)
 
     def output(self, instance):
         rule_name = self.name
