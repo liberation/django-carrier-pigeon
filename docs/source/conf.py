@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from django.conf import settings
-
-
 settings.configure()
 
 # Django Carrier Pigeon documentation build configuration file, created by

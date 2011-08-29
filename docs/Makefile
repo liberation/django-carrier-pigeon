@@ -36,6 +36,10 @@ help:
 clean:
 	-rm -rf $(BUILDDIR)/*
 
+export:
+    export PYTHONPATH=$PYTHONPATH:${PWD%/*/*}:${PWD%/*}
+    export DJANGO_SETTINGS_MODULE=settings
+
 html:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
