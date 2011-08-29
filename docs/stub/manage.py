@@ -8,7 +8,14 @@ except ImportError:
     sys.stderr.write("Error: Can't find the file 'settings.py' in the directory containing %r. It appears you've customized things.\nYou'll have to run django-admin.py, passing it your settings module.\n" % __file__)
     sys.exit(1)
 
+import sys
+from os import path
+carrier_pigeon_path = path.join(path.dirname(__file__), '..', '..')
+
+sys.path.insert(0, carrier_pigeon_path)
+
 import settings
 
 if __name__ == "__main__":
     execute_manager(settings)
+
