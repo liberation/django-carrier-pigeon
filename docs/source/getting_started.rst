@@ -115,5 +115,6 @@ You can also check if the file was properly generated in
 ``./tmp/export/messagepushconfiguration/test/wall_message.xml``.
 
 Congratulations you got the basics of carrier pigeon, you can now investigate
-the documentation, you might start by settings and commands.
+the documentation, you might start by settings and commands and dive into internals
+for more pigeon goodness.
 
