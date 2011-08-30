@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from django.conf import settings
-settings.configure()
-
 # Django Carrier Pigeon documentation build configuration file, created by
 # sphinx-quickstart on Wed Aug 24 12:13:37 2011.
 #
@@ -15,6 +12,15 @@ settings.configure()
 # serve to show the default.
 
 import sys, os
+
+carrier_pigeon_path = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', '..'))
+
+print carrier_pigeon_path
+
+sys.path.insert(0, carrier_pigeon_path)
+
+from django.conf import settings
+settings.configure()
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
