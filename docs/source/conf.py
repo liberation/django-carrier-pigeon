@@ -14,10 +14,10 @@
 import sys, os
 
 carrier_pigeon_path = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', '..'))
-
-print carrier_pigeon_path
+carrier_pigeon_package_path = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', '..', 'carrier_pigeon'))
 
 sys.path.insert(0, carrier_pigeon_path)
+sys.path.insert(0, carrier_pigeon_package_path)
 
 from django.conf import settings
 settings.configure()
