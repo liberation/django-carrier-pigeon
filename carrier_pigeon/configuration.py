@@ -1,3 +1,11 @@
+"""
+    Configuration
+    =============
+
+    Carrier Pigeon tasks are managed with class as configuration,
+    see :class:`carrier_pigeon.configuration.DefaultConfiguration` to get an idea
+    of what is possible.
+"""
 import logging
 from abc import abstractmethod
 
@@ -82,3 +90,4 @@ class DefaultConfiguration:
     @property
     def name(self):
         return self.__class__.__name__.lower()
+
