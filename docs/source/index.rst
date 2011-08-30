@@ -11,7 +11,7 @@ for a bunch of other things.
    getting_started
    settings
    commands
-   internals
+   api/modules
 
 
 Indices and tables
