@@ -76,8 +76,8 @@ class AddToQueueTest(TestCase):
     def test_add_to_queue(self):
         """This actually also tests that the filtering is corretly done
         through the presence of enough carrier pigeon configuration classes
-        in the registry. see :class:Test, :class:TestFilterByInstanceTypeFalse,
-        :class:TestFilterByUpdatesFalse, :class:TestFilterByStateFalse"""
+        in the registry. see :class:`TestConfiguration`, :class:`TestFilterByInstanceTypeFalse`,
+        :class:`TestFilterByUpdatesFalse`, :class:`TestFilterByStateFalse`"""
         dummy = Dummy(foo=1)
         dummy.save()
 
@@ -112,5 +112,4 @@ class AddToQueueTest(TestCase):
         self.assertEqual(count, 1)
         for item in qs:
             self.assertEqual(item.status, ItemToPush.STATUS.NEW)
-
 

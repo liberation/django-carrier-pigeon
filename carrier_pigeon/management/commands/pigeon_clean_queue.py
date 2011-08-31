@@ -9,7 +9,8 @@ from carrier_pigeon.models import ItemToPush
 
 
 class Command(BaseCommand):
-    """Remove old queue item"""
+    """Remove item :data:`CARRIER_PIGEON_MAX_AGE` old from
+    :class:`carrier_pigeon.models.ItemToPush`"""
     help = __doc__
 
     def handle(self, *args, **options):
@@ -19,3 +20,4 @@ class Command(BaseCommand):
         rules = rules.filter(status=ItemToPush.STATUS.PUSHED,
                              last_push_attempts_date__lte=limit)
         rules.delete()
+

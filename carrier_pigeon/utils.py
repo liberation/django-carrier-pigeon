@@ -65,10 +65,11 @@ def duplicate_row(rule_name, instance):
 
 
 def get_instance(clazz_module):
+    """Import clazz from ``clazz_module`` path and instanciate it"""
     module_path = clazz_module.split('.')
     module_path, clazz_name = module_path[:-1], module_path[-1]
     module_path = '.'.join(module_path)
     module = __import__(module_path, globals(), locals(), [clazz_name], -1)
     instance = getattr(module, clazz_name)()
     return instance
-    
+

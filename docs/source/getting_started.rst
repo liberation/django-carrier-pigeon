@@ -5,7 +5,7 @@ Project Configuration
 ---------------------
 
 First thing first, install Django Carrier Pigeon using you favorite tool and add
-the application in django settings ``INSTALLED_APPS``.
+the ``carrier_pigeon`` in django settings ``INSTALLED_APPS`` at the end of the list.
 
 Configuring your first task
 ---------------------------

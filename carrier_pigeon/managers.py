@@ -1,3 +1,17 @@
+"""
+    managers
+    ========
+
+    Default manager for ItemToPush. It makes it easy to filter by
+    :data:`carrier_pigeon.models.ItemToPush.STATUS` values.
+
+    Example usage:
+
+    .. code-block:: xml
+
+        >>> failed_push_items = ItemToPush.objects.push_error()
+        >>> for item in failed_push_items: item.reset()
+"""
 from new import instancemethod
 
 import models
@@ -50,3 +64,4 @@ def add_filters():
         setattr(BaseManager, method_name, query_by_status_method)
 
 add_filters()
+

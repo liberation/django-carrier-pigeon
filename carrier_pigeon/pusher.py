@@ -9,7 +9,7 @@ logger = logging.getLogger('carrier_pigeon.pusher')
 
 
 def ftp_send(row, url, file_path):
-    """Sends the file by ftp using information found in url."""
+    """Sends the file found at ``file_path`` by ftp using information found in url."""
     try:
         ftp = FTP(timeout=30)
         ftp.connect(url.domain, url.port)
@@ -51,13 +51,11 @@ def ftp_send(row, url, file_path):
         return False
 
 def dummy_send(row, url, file_path):
-    """
-    Dummy sender to use for tests and developpement phases.
-    """
+    """Dummy sender to use for tests and developpement phases. """
     return True
 
 def send(row, url, file_path):
-    """dispactch send according to url scheme"""
+    """Dispactch send according to url scheme"""
     if url.scheme == 'ftp':
         return ftp_send(row, url, file_path)
     if url.scheme == 'dummy':

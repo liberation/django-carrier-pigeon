@@ -7,7 +7,8 @@ from django.conf import settings
 
 
 class Command(BaseCommand):
-    """Cleans up archive content."""
+    """Cleans up archive content, see :data:`CARRIER_PIGEON_OUTPUT_DIRECTORY`"""
+
     help = __doc__
 
     def handle(self, *args, **options):
@@ -20,3 +21,4 @@ class Command(BaseCommand):
                     delta = time() - st_mtime
                     if delta  > settings.EXPORT_MAX_AGE:
                         os.remove(file_path)
+

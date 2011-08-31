@@ -6,9 +6,10 @@ Django. It was created at liberation.fr to manage content push, but can be used
 for a bunch of other things.
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 10
 
    getting_started
+   more_on_configuration
    settings
    commands
    api/modules
