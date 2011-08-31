@@ -18,7 +18,7 @@ import models
 
 from django.db import models as django_models
 
-NOT_CONSTANTS = ["CHOICES", "CHOICES_DICT", "REVERTED_CHOICES_DICT"]
+
 
 # BASE
 class BaseQuerySet(django_models.query.QuerySet):
@@ -42,7 +42,7 @@ def add_filters():
 
     This filters are mostly useless except if you do a lot of management from
     command line"""
-    constants = [c for c in dir(models.ITEM_TO_PUSH_STATUS) if c.isupper() and c not in NOT_CONSTANTS]
+    constants = [c for c in models.ITEM_TO_PUSH_STATUS.CHOICES_CONST_DICT.keys()]
     for current_constant in constants:
         method_name = current_constant.lower()
         def get_filter_function(constant):
