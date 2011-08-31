@@ -66,7 +66,7 @@ def filter(rule_name, configuration, instance, created):
 
 def select(sender, instance=None, created=False, **kwargs):
     """Add instance to ItemToPush queue for each partner that
-    validated the instance."""
+    validated the instance. See :func:`filter`"""
     logger.debug('post_save caught for %s?pk=%s' %
                  (instance._meta.object_name, instance.pk))
 
@@ -80,3 +80,4 @@ def select(sender, instance=None, created=False, **kwargs):
         # try to create a row for each push_url
         add_item_to_push(instance, rule_name)
     logger.debug('end of select')
+

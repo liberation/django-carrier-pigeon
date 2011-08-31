@@ -49,31 +49,42 @@ class BasicDirtyFieldsMixin(object):
         self._reset_modified_attrs()
 
 class ItemToPush(models.Model):
-    """Information about items that should be pushed."""
+    """Stores information about objects to push. The table is used as FIFO queue,
+    see :class:`carrier_pigeon.management.commands.pigeon_push`."""
+
+    #: status choices for :data:`status` attirbute
+    #: status with a value over 100 are errors
     STATUS = ITEM_TO_PUSH_STATUS
 
+    #: name of the rule that generated this item, see :meth:`carrier_pigeon.configuration.DefaultConfiguration`.
     rule_name = models.SlugField()
+    #: used to select the right push method pased on url scheme, passed as an
+    #: argument to the pushed see :func:`carrier_pigeon.pusher.send` and specifiq
+    #: implementation of pusher protocol like :func:`carrier_pigeon.pusher.ftp_send`
     push_url = models.CharField(max_length=300)
     creation_date = models.DateTimeField(auto_now_add=True)
     last_push_attempts_date = models.DateTimeField(null=True)
     push_attempts = models.PositiveIntegerField(default=0)
     status = models.PositiveIntegerField(choices=STATUS.CHOICES,
                                          default=STATUS.NEW)
+    #: used to store error message and traceback
     message = models.TextField()
-    
-    # Item to push
+
+    #: Generic Foreign Key field
     content_type = models.ForeignKey(ContentType)
+    #: Generic Foreign Key field
     object_id = models.PositiveIntegerField()
+    #: Generic Foreign Key field
     content_object = generic.GenericForeignKey('content_type', 'object_id')
-    
-    # Managers
+
+    #: Funky Manager see `carrier_pigeon.managers.BaseManager`
     objects = managers.BaseManager()
-    
-    
+
+
     def __unicode__(self):
         return '%s %s' % (self.rule_name,
                           self.get_status_display())
-    
+
     def reset(self):
         """
         Change this is item as a new.

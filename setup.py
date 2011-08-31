@@ -4,15 +4,21 @@ from distutils.core import setup
 
 
 def read(fname):
-    return open(os.path.join(os.path.dirname(__file__), fname)).read()
-
+    file_path = os.path.join(os.path.dirname(__file__), fname)
+    if os.path.exists(file_path):
+        return open(file_path).read()
+    else:
+        return ''
 
 setup(name='django-carrier-pigeon',
-      version='0.1.1',
-      description='Django application that help pushing content to remote locations',
+      version='0.0',
+      description='Django application for managing asynchronous task queue',
       long_description=read('README.rst'),
       author='Djaz Team',
       author_email='devweb@liberation.fr',
       url='https://github.com/liberation/django-push-content',
-      packages=['carrier_pigeon'],
+      packages=['carrier_pigeon',
+                'carrier_pigeon.management',
+                'carrier_pigeon.management.commands'],
      )
+

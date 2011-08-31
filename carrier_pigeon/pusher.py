@@ -1,5 +1,6 @@
 import os
 import logging
+import traceback
 from ftplib import FTP, error_perm
 
 from carrier_pigeon.models import ItemToPush
@@ -8,7 +9,7 @@ logger = logging.getLogger('carrier_pigeon.pusher')
 
 
 def ftp_send(row, url, file_path):
-    """Sends the file by ftp using information found in url."""
+    """Sends the file found at ``file_path`` by ftp using information found in url."""
     try:
         ftp = FTP(timeout=30)
         ftp.connect(url.domain, url.port)
@@ -16,8 +17,8 @@ def ftp_send(row, url, file_path):
         if url.login:
             ftp.login(url.login, url.password)
         else:
-            url.login()
-        
+            ftp.login()
+
         # Path should not end with a /
         path = url.path
         if path.endswith("/"):
@@ -33,30 +34,31 @@ def ftp_send(row, url, file_path):
                 # Don't catch the error now, in case the error_perm was for
                 # another reason
                 ftp.cwd(directory)
-            
+
         filename = os.path.split(file_path)[1]
         f = open(file_path)
         ftp.storbinary('STOR %s' % filename, f)
-        f.close()
+        ftp.close()
         ftp.quit()
+        f.close()
         logger.debug('successfully pushed %s@%s' % (filename, url.url))
         return True
     except Exception, e:
         row.status = ItemToPush.STATUS.SEND_ERROR
-        row.message = 'ftp_send: exception message: %s' % (e.message)
+        row.message = 'ftp_send: exception message: %s\n' % (e.message)
+        row.message += traceback.extract_stack()
         row.save()
         return False
 
 def dummy_send(row, url, file_path):
-    """
-    Dummy sender to use for tests and developpement phases.
-    """
+    """Dummy sender to use for tests and developpement phases. """
     return True
 
 def send(row, url, file_path):
-    """dispactch send according to url scheme"""
+    """Dispactch send according to url scheme"""
     if url.scheme == 'ftp':
         return ftp_send(row, url, file_path)
     if url.scheme == 'dummy':
         return dummy_send(row, url, file_path)
     logger.error('url scheme %s not supported' % url.scheme)
+

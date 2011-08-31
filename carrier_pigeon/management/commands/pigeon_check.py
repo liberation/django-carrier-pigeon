@@ -12,13 +12,13 @@ from carrier_pigeon.models import ItemToPush
 class Command(BaseCommand):
     """Carrier pigeon health check
 
-    - it returns exit code 0 if everything is OK.
+    - Returns exit code 0 if everything is OK.
 
-    - it returns exit code *2* if there are new items 
-      ``CARRIER_PIGEON_CHECK_OLD_AGE`` seconds old or more
-    
-    - it returns exit code *1* if there are new items 
-      ``CARRIER_PIGEON_CHECK_TOO_OLD_AGE`` seconds old or more but
+    - Returns exit code *2* if there are new items
+      :data:`CARRIER_PIGEON_CHECK_OLD_AGE` seconds old or more
+
+    - Returns exit code *1* if there are new items
+      :data:`CARRIER_PIGEON_CHECK_TOO_OLD_AGE` seconds old or more but
       less that 30 minutes"""
     help = __doc__
 
@@ -41,3 +41,4 @@ class Command(BaseCommand):
             sys.exit(1)
 
         sys.exit(0)
+

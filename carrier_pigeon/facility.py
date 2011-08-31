@@ -8,7 +8,9 @@ logger = logging.getLogger('carrier_pigeon.facility')
 
 
 def add_item_to_push(instance, rule_name):
-    """Adds an item to ``ItemToPush`` table aka. push queue"""
+    """Adds an item to ``ItemToPush`` table aka. push queue. You can use this function
+    to force the add of rule without using the select algorithm. ``rule_name`` should
+    be a valid rule name :meth:`carrier_pigeon.configuration.DefaultConfiguration.name`."""
     logger.debug('adding %s for %s config' % (instance, rule_name))
     try:
         rule = REGISTRY[rule_name]
@@ -29,3 +31,4 @@ def add_item_to_push(instance, rule_name):
             logger.debug('Added item in the ItemToPush queue @ %s' %
                          row.pk)
         rule.post_select(instance)
+

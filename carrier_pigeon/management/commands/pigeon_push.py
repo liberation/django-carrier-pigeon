@@ -21,9 +21,9 @@ logger = logging.getLogger('carrier_pigeon.command.push')
 def item_to_push_queue():
     """
     Generator.
-    
-    Retrieve rows in queue.
-    """
+
+    Retrieve in order of creation items from :class:`carrier_pigeon.models.ItemToPush`
+    table."""
     offset = getattr(settings, "CARRIER_SELECT_OFFSET", 10)
     while True:
         qs = ItemToPush.objects.all()
@@ -89,9 +89,9 @@ class Command(BaseCommand):
                                 # do no want to send the file
                 logger.debug('the output was not validated')
                 continue
-            
+
             output_filename = rule.get_output_filename(instance)
-            
+
             # Get remote target directory (used also in archiving)
             target_directory = None
             try:
@@ -122,9 +122,9 @@ class Command(BaseCommand):
             f = open(output_path, 'w')
             f.write(output)
             f.close()
-            
+
             # End of archiving
-            
+
             # Prepare sending
             target_url = join_url_to_directory(row.push_url,
                                                target_directory)
@@ -147,5 +147,6 @@ class Command(BaseCommand):
                     sent = True
                     break  # send succeded, exit the for-block
             if sent == False:
-                logger.error(u'Send failed for "%s" after %d attempts' % 
+                logger.error(u'Send failed for "%s" after %d attempts' %
                                                            (unicode(row), max_))
+
