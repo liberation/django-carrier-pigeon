@@ -34,6 +34,7 @@ class Command(BaseCommand):
                 output += '%s@%s %s\n' % (item.rule_name, item.push_url, item.content_object)
             count = rules.count()
             output += 'Total count of item to be deleted %s' % count
+            print output
         else:
             rules.delete()
 
