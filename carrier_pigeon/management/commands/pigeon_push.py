@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
-"""Push items in the ItemToPush queue"""
+""" Push items in the ItemToPush queue. """
+
 import os
 import logging
 from datetime import datetime
@@ -29,7 +30,7 @@ def item_to_push_queue():
         qs = ItemToPush.objects.all()
         qs = qs.order_by('creation_date')
         qs = qs.filter(status=ItemToPush.STATUS.NEW)
-        rows = qs[:offset]  # don't retrieve to many rows at once
+        rows = qs[:offset]  # don't retrieve too many rows at once
         if len(rows) == 0:
             return
         for row in rows:
@@ -41,6 +42,20 @@ class Command(BaseCommand):
     help = __doc__
 
     def handle(self, *args, **options):
+
+        rules = {}
+
+        # --- First, ident/init all the configurations involved in this push
+
+        for row in item_to_push_queue():
+            rule_name = row.rule_name
+            rule = REGISTRY[rule_name]
+            if rule_name not in rules.keys():
+                rule.initialize_push()
+                rules['rule_name'] = rule
+
+        # --- Then, iterate through the items to push
+
         for row in item_to_push_queue():
             logger.debug(u'processing row id=%s, rule_name=%s' %
                                                         (row.pk, row.rule_name))
@@ -48,104 +63,10 @@ class Command(BaseCommand):
             row.save()
 
             rule_name = row.rule_name
-            rule = REGISTRY[rule_name]
+            rule = rules[rule_name]
+            rule.push_one(row)
 
-            instance = row.content_object
+        # --- Then, finalize the push for each relevant rule
 
-            # build output
-            try:
-                output = rule.output(instance)
-            except Exception, e:
-                message = u"Exception during output generation. "
-                message += u'Exception ``%s`` raised: %s ' % (
-                                e.__class__.__name__, e.message)
-                row.status = ItemToPush.STATUS.OUTPUT_GENERATION_ERROR
-                row.message = message
-                row.save()
-                logger.error(message, exc_info=True)
-                continue
-
-            # validate output
-            validation = True
-            for validator in rule.validators:
-                try:
-                    validator(output)
-                    logger.debug('validation ``%s`` passed successfully'
-                                                           % validator.__name__)
-                except Exception, e:
-                    validation = False
-                    message = u"Validation ``%s`` failed ! " % validator.__name__
-                    message += u'Catched exception %s : %s' % (
-                                e.__class__.__name__, e.message)
-                    row.status = ItemToPush.STATUS.VALIDATION_ERROR
-                    if row.message != None:
-                        row.message += '\n' + message
-                    else:
-                        row.message = message
-                    logger.error(message, exc_info=True)
-                    row.save()
-
-            if not validation:  # if one validator did not pass we
-                                # do no want to send the file
-                logger.debug('the output was not validated')
-                continue
-            
-            output_filename = rule.get_output_filename(instance)
-            
-            # Get remote target directory (used also in archiving)
-            target_directory = None
-            try:
-                target_directory = rule.get_directory(instance)
-            except Exception, e:
-                message = u"Error during ``get_directory``. "
-                message += u"%s: %s" % (
-                                e.__class__.__name__, e.message)
-                row = ItemToPush(rule_name=rule_name,
-                                 content_object=instance)
-                row.status = ItemToPush.STATUS.GET_DIRECTORY_ERROR
-                row.message = message
-                row.save()
-                logger.error(message, exc_info=True)
-                continue
-
-            # build output file path for archiving
-            output_directory = settings.CARRIER_PIGEON_OUTPUT_DIRECTORY
-            output_directory += '/%s/' % rule_name
-            output_directory += '/%s/' % target_directory
-
-            # create output_directory if it doesn't exists
-            if not os.path.exists(output_directory):
-                os.makedirs(output_directory)
-            output_path = '%s/%s' % (output_directory, output_filename)
-
-            # write output file
-            f = open(output_path, 'w')
-            f.write(output)
-            f.close()
-            
-            # End of archiving
-            
-            # Prepare sending
-            target_url = join_url_to_directory(row.push_url,
-                                               target_directory)
-            logger.debug('target url is ``%s``' % target_url)
-            target_url = URL(target_url)
-
-            # try to send
-            max_ = settings.CARRIER_PIGEON_MAX_PUSH_ATTEMPS
-            sent = False
-            for push_attempt_num in xrange(max_):
-                logger.debug('push attempt %s' % push_attempt_num)
-                row.push_attempts += 1
-                row.last_push_attempts_date = datetime.now()
-                row.save()
-
-                if send(row, target_url, output_path):
-                    row.status = ItemToPush.STATUS.PUSHED
-                    row.save()
-                    logger.debug('succeeded')
-                    sent = True
-                    break  # send succeded, exit the for-block
-            if sent == False:
-                logger.error(u'Send failed for "%s" after %d attempts' % 
-                                                           (unicode(row), max_))
+        for rule in rules:
+            rule.finalize_push()

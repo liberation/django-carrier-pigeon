@@ -1,4 +1,10 @@
+# -*- coding:utf-8 -*-
+
+import os
+
+from contextlib import closing
 from urlparse import urlparse
+from zipfile import ZipFile, ZIP_DEFLATED
 
 from carrier_pigeon.models import ItemToPush
 
@@ -71,4 +77,17 @@ def get_instance(clazz_module):
     module = __import__(module_path, globals(), locals(), [clazz_name], -1)
     instance = getattr(module, clazz_name)()
     return instance
+
+
+# From: http://stackoverflow.com/questions/296499
+def zipdir(base_dir, archive_name):
+    with closing(ZipFile(archive_name, "w", ZIP_DEFLATED)) as zip_:
+        for root, dirs, files in os.walk(base_dir):
+            for filename in files:
+                absolute_filename = os.path.join(root, filename)
+                zip_filename = absolute_filename[len(base_dir)+len(os.sep):]
+                zip_.write(absolute_filename, zip_filename)
+
+
+
     
