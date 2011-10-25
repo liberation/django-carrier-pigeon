@@ -1,3 +1,7 @@
+# -*- coding:utf-8 -*-
+
+""" MR: Should be obsolete by now. """
+
 import os
 import logging
 from ftplib import FTP, error_perm
@@ -9,6 +13,7 @@ logger = logging.getLogger('carrier_pigeon.pusher')
 
 def ftp_send(row, url, file_path):
     """Sends the file by ftp using information found in url."""
+
     try:
         ftp = FTP(timeout=30)
         ftp.connect(url.domain, url.port)
@@ -22,6 +27,7 @@ def ftp_send(row, url, file_path):
         path = url.path
         if path.endswith("/"):
             path = url.path[:-1]
+
         # Go to remote directory (create it if needed)
         for directory in path.split("/"):
             try:
@@ -41,6 +47,7 @@ def ftp_send(row, url, file_path):
         ftp.quit()
         logger.debug('successfully pushed %s@%s' % (filename, url.url))
         return True
+
     except Exception, e:
         row.status = ItemToPush.STATUS.SEND_ERROR
         row.message = 'ftp_send: exception message: %s' % (e.message)

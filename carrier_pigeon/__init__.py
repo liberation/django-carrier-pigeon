@@ -7,9 +7,9 @@ from django.db.models.signals import post_save
 from django.db.models.signals import class_prepared
 from django.conf import settings
 
-from carrier_pigeon.select import select
-from carrier_pigeon.models import BasicDirtyFieldsMixin
-from carrier_pigeon.utils import get_instance
+from select import select
+from models import BasicDirtyFieldsMixin
+from utils import get_instance
 
 
 REGISTRY = {}
@@ -39,6 +39,6 @@ if hasattr(settings, 'CARRIER_PIGEON_CLASSES'):
     for clazz_module in settings.CARRIER_PIGEON_CLASSES:
         register_config(clazz_module)
 
-    # if there is not classes pigeon is not really used by
-    # the project so we do not need to connect post_save
+    # --- If there are no classes, carrier_pigeon is not really used by
+    #      the project so we do not need to connect the post_save signal
     class_prepared.connect(subscribe_to_post_save)

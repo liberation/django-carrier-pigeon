@@ -1,20 +1,18 @@
 # -*- coding:utf-8 -*-
 
-from django.test import TestCase
-
 from django.core import management
-
 from django.db import models
 from django.db.models.signals import class_prepared
 from django.db.models.signals import post_save
+from django.test import TestCase
 
 from carrier_pigeon import REGISTRY, add_instance, subscribe_to_post_save
-from carrier_pigeon.configuration import FilesPusherConfiguration, ArchivePusherConfiguration
+from carrier_pigeon.configuration import SequentialPusherConfiguration
 from carrier_pigeon.models import BasicDirtyFieldsMixin, ItemToPush
 from carrier_pigeon.select import select
 
 
-class TestConfiguration(FilesPusherConfiguration):
+class TestConfiguration(SequentialPusherConfiguration):
     push_urls = ('ftp://foo.bar.baz',)
 
     def filter_by_instance_type(self, instance):

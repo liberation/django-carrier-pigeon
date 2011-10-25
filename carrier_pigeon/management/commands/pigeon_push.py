@@ -1,4 +1,5 @@
 # -*- coding:utf-8 -*-
+
 """ Push items in the ItemToPush queue. """
 
 import os
@@ -6,14 +7,10 @@ import logging
 from datetime import datetime
 
 from django.conf import settings
-
 from django.core.management.base import BaseCommand
 
-from carrier_pigeon.models import ItemToPush
-from carrier_pigeon.pusher import send
-from carrier_pigeon.utils import URL
-from carrier_pigeon.utils import join_url_to_directory
 from carrier_pigeon import REGISTRY
+from carrier_pigeon.models import ItemToPush
 
 
 logger = logging.getLogger('carrier_pigeon.command.push')
@@ -38,7 +35,7 @@ def item_to_push_queue():
 
 
 class Command(BaseCommand):
-    """Push items in the ItemToPush queue."""
+    """ Push items in the ItemToPush queue. """
     help = __doc__
 
     def handle(self, *args, **options):
@@ -49,10 +46,17 @@ class Command(BaseCommand):
 
         for row in item_to_push_queue():
             rule_name = row.rule_name
-            rule = REGISTRY[rule_name]
+            try:
+                rule = REGISTRY[rule_name]
+            except KeyError:
+                logger.warning(
+                    u'Asked rule "%s" does not exist (instance : %s %d)'
+                        % (rule_name, instance.__class__.__name__, instance.pk))
+                continue
+
             if rule_name not in rules.keys():
                 rule.initialize_push()
-                rules['rule_name'] = rule
+                rules[rule_name] = rule
 
         # --- Then, iterate through the items to push
 
@@ -64,7 +68,7 @@ class Command(BaseCommand):
 
             rule_name = row.rule_name
             rule = rules[rule_name]
-            rule.push_one(row)
+            rule.export_item(row)
 
         # --- Then, finalize the push for each relevant rule
 

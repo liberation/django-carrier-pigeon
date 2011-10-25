@@ -1,29 +1,13 @@
 # -*- coding:utf-8 -*-
 
 import os
-
 from contextlib import closing
 from urlparse import urlparse
 from zipfile import ZipFile, ZIP_DEFLATED
 
-from carrier_pigeon.models import ItemToPush
+from django.db.models import fields
 
-
-def join_url_to_directory(url, directory):
-    ends_with = url.endswith('/')
-    starts_with = directory.endswith('/')
-
-    if ends_with and starts_with:
-        return ''.join((url, directory[1:]))
-
-    if ((ends_with and not starts_with) or
-        (not ends_with and starts_with)):
-        return ''.join((url, directory))
-
-    if not ends_with and not starts_with:
-        return ''.join((url, '/', directory))
-
-    raise Exception('Unhandled case')
+from models import ItemToPush
 
 
 class URL:
@@ -50,6 +34,23 @@ class URL:
             self.domain, self.port = self.domain.split(':')
         else:
             self.port = None
+
+
+def join_url_to_directory(url, directory):
+    ends_with = url.endswith('/')
+    starts_with = directory.endswith('/')
+
+    if ends_with and starts_with:
+        return ''.join((url, directory[1:]))
+
+    if ((ends_with and not starts_with) or
+        (not ends_with and starts_with)):
+        return ''.join((url, directory))
+
+    if not ends_with and not starts_with:
+        return ''.join((url, '/', directory))
+
+    raise Exception('Unhandled case')
 
 
 def duplicate_row(rule_name, instance):
@@ -79,6 +80,19 @@ def get_instance(clazz_module):
     return instance
 
 
+def is_file_field(field):
+    return fields.files.FileField in field.__class__.mro()
+
+def is_relation_field(field):
+    return fields.related.RelatedField in field.__class__.mro()
+
+def related_objects(instance, field):
+    f = getattr(instance, field.name)
+    try:
+        return f.all()
+    except AttributeError:
+        return [f]
+
 # From: http://stackoverflow.com/questions/296499
 def zipdir(base_dir, archive_name):
     with closing(ZipFile(archive_name, "w", ZIP_DEFLATED)) as zip_:
@@ -87,7 +101,3 @@ def zipdir(base_dir, archive_name):
                 absolute_filename = os.path.join(root, filename)
                 zip_filename = absolute_filename[len(base_dir)+len(os.sep):]
                 zip_.write(absolute_filename, zip_filename)
-
-
-
-    
