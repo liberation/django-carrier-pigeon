@@ -6,7 +6,7 @@ from django.core.management.base import BaseCommand
 from carrier_pigeon import REGISTRY
 
 
-logger = logging.getLogger('carrier_pigeon.command.zipush')
+logger = logging.getLogger('carrier_pigeon.command.mass_push')
 
 
 def instantiate_class(name):
@@ -31,7 +31,7 @@ class Command(BaseCommand):
                 rule = instantiate_class(rule_name)
             except ImportError:
                 logger.error(
-                    "pigeon_zipush(): Cannot import rule '%s', skipping..." \
+                    "pigeon_mass_push(): Cannot import rule '%s', skipping..." \
                         % rule_name)
                 continue
             
