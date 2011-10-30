@@ -1,7 +1,9 @@
 # -*- coding:utf-8 -*-
 
+import os
 import shutil
 import logging
+
 from abc import abstractmethod
 from datetime import datetime
 
@@ -15,7 +17,7 @@ from carrier_pigeon import REGISTRY
 from models import ItemToPush
 from facility import add_item_to_push
 from senders import DefaultSender, FTPSender
-from utils import URL, join_url_to_directory, zipdir, \
+from utils import URL, TreeHash, join_url_to_directory, zipdir, \
     is_file_field, is_relation_field, related_objects
 
 
@@ -63,6 +65,16 @@ class DefaultConfiguration:
     def get_directory(self, instance):
         pass
 
+    def get_template_name(self, instance):
+        rule_name = self.name
+        app_label = instance._meta.app_label.lower()
+        class_name = instance._meta.module_name
+        template_name = '%s_%s.xml' % (app_label, class_name)
+
+    def get_template_path(self, instance, template_name):
+        rule_name = self.name
+        return 'carrier_pigeon/%s/%s' % (rule_name, template_name)
+
     def get_extra_context(self, instance):
         return dict()
 
@@ -75,39 +87,44 @@ class DefaultConfiguration:
         return '%s_%s' % (instance._meta.module_name, instance.pk)
 
     def output(self, instance):
-        rule_name = self.name
-
-        # build template file path
-        app_label = instance._meta.app_label.lower()
-        class_name = instance._meta.module_name
-        template_name = '%s_%s.xml' % (app_label, class_name)
-
-        template_path = 'carrier_pigeon/%s/%s' % (rule_name, template_name)
+        template_name = self.get_template_name(instance)
+        template_path = self.get_template_path(instance, template_name)
 
         template = loader.get_template(template_path)
 
         context = self.get_extra_context(instance)
         context['object'] = instance
         context = Context(context)
+
         output = template.render(context)
         return output.encode("utf-8")
 
-    def instance_binaries(self, instance, depth):
+    def item_binaries(self, item, depth):
+        try:
+            logging.debug("item_binaries(): depth: %d" % depth)
+            logging.debug("item_binaries(): item: %s" % item)
+            logging.debug("item_binaries(): class: %s" % item.__class__.__name__)
+        except:
+            pass
+
         binaries = list()
+        try:
+            fields = item._meta.fields
+        except:
+            return binaries
 
-        for field in instance._meta.fields:
-
+        for field in fields:
             if is_file_field(field):
                 binaries.append(field.path)
 
             elif is_relation_field(field) and depth:
-                for obj in related_objects(instance, field):
-                    binaries.extend(self.instance_binaries(obj, depth-1))
+                for obj in related_objects(item, field):
+                    binaries.extend(self.item_binaries(obj, depth-1))
 
         return binaries
 
-    def output_binaries(self, instance):
-        """ Output all `instance`'s linked binaries. Return file list. """
+    def output_binaries(self, item):
+        """ Output all `item`'s linked binaries. Return file list. """
 
         if not self.EXPORT_BINARIES:
             return list()
@@ -115,7 +132,7 @@ class DefaultConfiguration:
         depth = self.EXPORT_BINARIES_RELATIONSHIP_DEPTH \
             if self.EXPORT_BINARIES_ACROSS_RELATIONSHIPS else 0
 
-        return self.instance_binaries(instance, depth)
+        return self.item_binaries(item, depth)
 
     def post_select(self, instance):
         pass
@@ -132,7 +149,7 @@ class DefaultConfiguration:
         try:
             output = self.output(item)
         except Exception, e:
-            message = u"Exception during output generation. "
+            message  = u"Exception during output generation. "
             message += u'Exception ``%s`` raised: %s ' % (
                             e.__class__.__name__, e.message)
             if row:
@@ -151,8 +168,8 @@ class DefaultConfiguration:
                                                        % validator.__name__)
             except Exception, e:
                 validation = False
-                message = u"Validation ``%s`` failed ! " % validator.__name__
-                message += u'Catched exception %s : %s' % (
+                message  = u"Validation ``%s`` failed ! " % validator.__name__
+                message += u'Caught exception %s : %s' % (
                             e.__class__.__name__, e.message)
                 if row:
                     row.status = ItemToPush.STATUS.VALIDATION_ERROR
@@ -190,7 +207,8 @@ class DefaultConfiguration:
         # --- Build output file path for archiving
         output_directory = settings.CARRIER_PIGEON_OUTPUT_DIRECTORY
         output_directory += '/%s/' % rule_name
-        output_directory += '/%s/' % target_directory
+        if target_directory:
+            output_directory += '/%s/' % target_directory
 
         # --- Create output directory if necessary
         if not os.path.exists(output_directory):
@@ -206,17 +224,27 @@ class DefaultConfiguration:
         # --- Add linked binaries, if any
         binaries = self.output_binaries(item)
         if binaries:
-            binary_path = '%s/%s' % (
-                output_directory, self.get_binary_path(item))
+            bin_dir = '%s%s' % (output_directory, self.get_binary_path(item))
+            try:
+                os.makedirs(bin_dir)
+                logging.debug('export_item(): created dir: %s' % bin_dir)
+            except:
+                pass
+
             for binary in binaries:
                 try:
-                    shutil.copy(binary, binary_path)
+                    bin_path = os.path.join(bin_dir, os.path.basename(binary))
+                    shutil.copy(binary, bin_path)
                     output_files.append(
-                        '%s/%s' % binary_path, os.path.basename(binary))
-                except:
+                        '%s/%s' % (bin_dir, os.path.basename(binary)))
+                    logging.info(
+                        'export_item(): Copy successful: %s to %s'
+                            % (binary, bin_path))
+
+                except Exception, ex:
                     logging.error(
-                        'export_item(): Error while copying %s to %s'
-                            % (binary, binary_path))
+                        'export_item(): Error while copying %s to %s: %s'
+                            % (binary, bin_path, ex))
 
         return output_files
 
@@ -273,6 +301,8 @@ class MassPusherConfiguration(DefaultConfiguration):
     # --- If so, across how many relationship levels?
     EXPORT_BINARIES_RELATIONSHIP_DEPTH = 3
 
+    _local_checksum = _remote_checksum = False
+
 
     def get_items_to_push(self):
         """ Get the list of items to include in this push. Implement me! """
@@ -282,11 +312,15 @@ class MassPusherConfiguration(DefaultConfiguration):
         """ Pack files to deliver, return a list of files. Implement me! """
         return list()
 
+    def cleanup(self):
+        """ Delete temporary files in export directory. """
+        shutil.rmtree(self._get_export_root_directory())
+
     def finalize_push(self):
         files = self.pack()
         target_url = URL(self.TARGET_URL)
-        return self.deliver(files, target_url)
-
+        self.deliver(files, target_url)
+        self.cleanup()
 
 class ZIPPusherConfiguration(MassPusherConfiguration):
     """
@@ -317,20 +351,29 @@ class ZIPPusherConfiguration(MassPusherConfiguration):
         """ Pack files into ZIP archive. """
 
         dirname = self._get_export_root_directory()
+        logging.debug("pack(): dirname: %s" % dirname)
+
         zipname = self._get_archive_name()
+        logging.debug("pack(): zipname: %s" % zipname)
 
         try:
             zipdir(dirname, zipname)
         except IOError:
-            logger.error(u"pack(): Cannot create archive '%s' in directory '%s'" \
+            logging.error(u"pack(): Cannot create archive '%s' in directory '%s'" \
                 % (zipname, dirname))
             raise
         except Exception, e:
             message  = u"pack(): Exception during archive creation. "
             message += u'Exception ``%s`` raised: %s ' \
                 % (e.__class__.__name__, e.message)
-            logger.error(message, exc_info=True)
+            logging.error(message, exc_info=True)
             raise
+
+        self._archive_name = os.path.basename(zipname)
+        logging.debug("pack(): archive_name: %s" % self._archive_name)
+
+        self._local_checksum = TreeHash(dirname).hash()
+        logging.debug("pack(): local_checksum: %s" % self._local_checksum)
 
         return [zipname]
 

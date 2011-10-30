@@ -1,6 +1,10 @@
 # -*- coding:utf-8 -*-
 
 import os
+import pickle
+import hashlib
+import logging
+
 from contextlib import closing
 from urlparse import urlparse
 from zipfile import ZipFile, ZIP_DEFLATED
@@ -8,6 +12,9 @@ from zipfile import ZipFile, ZIP_DEFLATED
 from django.db.models import fields
 
 from models import ItemToPush
+
+
+logger = logging.getLogger('carrier_pigeon.utils')
 
 
 class URL:
@@ -34,6 +41,52 @@ class URL:
             self.domain, self.port = self.domain.split(':')
         else:
             self.port = None
+
+
+class TreeHash:
+    """
+    Allow to compute a validation hash for a whole directory tree.
+    Used in local vs. remote testing.
+    """
+
+    def __init__(self, local_root):
+        self._local_root = local_root
+        self._files = list()
+        self._hasher = hashlib.sha1
+        self._hash = ''
+
+    def hash_file(self, fn):
+        hasher = self._hasher()
+        with open(fn,'rb') as f: 
+            for chunk in iter(lambda: f.read(128*hasher.block_size), ''): 
+                 hasher.update(chunk)
+        return hasher.hexdigest()
+
+    def list_files(self):
+        self._files = list()
+        for root, dirs, files in os.walk(self._local_root, topdown=True):
+            for f in files:
+                fn_full = os.path.join(root, f)
+                fn_rel = fn_full.replace(self._local_root, './')
+                self._files.append((
+                    fn_rel,                   # file name, rel. to local root
+                    os.stat(fn_full).st_size, # file size, in bytes
+                    self.hash_file(fn_full),  # file hash
+                ))
+
+        #logging.debug(u"TreeHash.list_files(): %s" % str(self._files))
+
+    def compute(self):
+        self.list_files()
+        digest = pickle.dumps(self._files)
+        self._hash = self._hasher(digest).hexdigest()
+
+        #logging.debug(u"TreeHash.compute(): %s" % self._hash)
+
+        return self._hash
+
+    def hash(self):
+        return self._hash or self.compute()
 
 
 def join_url_to_directory(url, directory):
@@ -93,11 +146,15 @@ def related_objects(instance, field):
     except AttributeError:
         return [f]
 
-# From: http://stackoverflow.com/questions/296499
-def zipdir(base_dir, archive_name):
-    with closing(ZipFile(archive_name, "w", ZIP_DEFLATED)) as zip_:
-        for root, dirs, files in os.walk(base_dir):
-            for filename in files:
-                absolute_filename = os.path.join(root, filename)
-                zip_filename = absolute_filename[len(base_dir)+len(os.sep):]
-                zip_.write(absolute_filename, zip_filename)
+
+# From: http://coreygoldberg.blogspot.com/2009/07/python-zip-directories-recursively.html
+def zipdir(dir, zip_file):
+    zip_ = ZipFile(zip_file, 'w', compression=ZIP_DEFLATED)
+    root_len = len(os.path.abspath(dir))
+    for root, dirs, files in os.walk(dir):
+        archive_root = os.path.abspath(root)[root_len:]
+        for f in files:
+            fullpath = os.path.join(root, f)
+            archive_name = os.path.join(archive_root, f)
+            zip_.write(fullpath, archive_name, ZIP_DEFLATED)
+    zip_.close()
