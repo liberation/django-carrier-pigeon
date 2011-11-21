@@ -31,10 +31,13 @@ class DefaultConfiguration:
     ``output`` methods for more information. """
 
 
-    # --- Override us!
+    # --- OVERRIDE US! :)
 
+    # --- Should the linked binaries be exported as well?
     EXPORT_BINARIES = False
+    # --- Should we look for binaries across relationships?
     EXPORT_BINARIES_ACROSS_RELATIONSHIPS = False
+    # --- If so, across how many relationship levels?
     EXPORT_BINARIES_RELATIONSHIP_DEPTH = 0
 
 
@@ -74,30 +77,43 @@ class DefaultConfiguration:
         pass
 
     def get_template_name(self, instance):
+        """ Return the name of the template used to dump the object data. """
+
         app_label = instance._meta.app_label.lower()
         class_name = instance._meta.module_name
         template_name = '%s_%s.xml' % (app_label, class_name)
 
     def get_template_path(self, instance):
+        """ Return the fully-qualified path to the template used to dump
+        the object data. """
+
         rule_name = self.name
         template_name = self.get_template_name(instance)
         return 'carrier_pigeon/%s/%s' % (rule_name, template_name)
 
     def get_extra_context(self, instance):
+        """ If there needs to be some extra context passed to the template,
+        just override this method in your own configuration implementation. """
+
         return dict()
 
     def get_output_filename(self, instance):
+        """ Return the filename used to dump the object data. """
+
         return '%s_%s_%s.xml' % (instance._meta.app_label.lower(),
                                  instance._meta.module_name,
                                  instance.pk)
 
     def get_binary_path(self, instance):
+        """ Return the path into which to store the item's related
+        binary files. """
+
         return '%s_%s' % (instance._meta.module_name, instance.pk)
 
     def output(self, instance):
-        template_name = self.get_template_name(instance)
-        template_path = self.get_template_path(instance, template_name)
+        """ Dump this instance's data into an UTF-8 string. """
 
+        template_path = self.get_template_path(instance)
         template = loader.get_template(template_path)
 
         context = self.get_extra_context(instance)
@@ -108,6 +124,9 @@ class DefaultConfiguration:
         return output.encode("utf-8")
 
     def item_binaries(self, item, depth):
+        """ Return the list of binary files linked to this item, by
+        listing file-like fields on this item and its related ones. """
+
         logging.debug("item_binaries(): depth: %d" % depth)
         logging.debug("item_binaries(): item: %s" % item)
         logging.debug("item_binaries(): class: %s" % item.__class__.__name__)
@@ -119,9 +138,12 @@ class DefaultConfiguration:
             return binaries
 
         for field in fields:
+
+            # --- If this is a "File-like" field, get the file path
             if is_file_field(field):
                 binaries.append(field.path)
 
+            # --- If this is a "Relation-like" field, recurse
             elif is_relation_field(field) and depth:
                 for obj in related_objects(item, field):
                     binaries.extend(self.item_binaries(obj, depth-1))
@@ -129,7 +151,9 @@ class DefaultConfiguration:
         return binaries
 
     def output_binaries(self, item):
-        """ Output all `item`'s linked binaries. Return file list. """
+        """ Output all `item`'s linked binaries, according to the 
+        EXPORT_BINARIES, EXPORT_BINARIES_ACROSS_RELATIONSHIPS and
+        EXPORT_BINARIES_RELATIONSHIP_DEPTH settings. Return file list. """
 
         if not self.EXPORT_BINARIES:
             return list()
@@ -143,9 +167,15 @@ class DefaultConfiguration:
         pass
 
     def initialize_push(self):
+        """ Right here, it's nothing more than a placeholder, but you may use
+        this method in your subclass if you need a hook to execute some code
+        before looping on the items to export. """
+
         pass
 
     def export_item(self, item, row=None):
+        """ Export one item. Main entry point of this class's methods. """
+
         rule_name = self.name
 
         output_files = []
@@ -236,6 +266,7 @@ class DefaultConfiguration:
             except:
                 pass
 
+            # --- Copy all binary files to the output directory
             for binary in binaries:
                 try:
                     bin_path = os.path.join(bin_dir, os.path.basename(binary))
@@ -254,6 +285,11 @@ class DefaultConfiguration:
         return output_files
 
     def finalize_push(self):
+        """ Right here, it's nothing more than a placeholder, but you may use
+        this method in your subclass if you need a hook to execute some code
+        after looping on the items to export. For example, if the exported
+        files need to be archived and sent, this will happen here. """
+
         pass
 
 
@@ -265,15 +301,9 @@ class SequentialPusherConfiguration(DefaultConfiguration):
     Associated management command: python manage.py pigeon_push
     """
 
-    # --- Should the linked binaries be exported as well?
     EXPORT_BINARIES = False
-
-    # --- Should we look for binaries across relationships?
     EXPORT_BINARIES_ACROSS_RELATIONSHIPS = False
-
-    # --- If so, across how many relationship levels?
     EXPORT_BINARIES_RELATIONSHIP_DEPTH = 3
-
 
     def export_item(self, item):
         """ Here, `item` is an `ItemToPush` instance. """
@@ -297,17 +327,12 @@ class MassPusherConfiguration(DefaultConfiguration):
     Management command: python manage.py pigeon_mass_push <config_name>
     """
 
-    # --- Should the linked binaries be exported as well?
     EXPORT_BINARIES = True
-
-    # --- Should we look for binaries across relationships?
     EXPORT_BINARIES_ACROSS_RELATIONSHIPS = False
-
-    # --- If so, across how many relationship levels?
     EXPORT_BINARIES_RELATIONSHIP_DEPTH = 3
 
-    _local_checksum = _remote_checksum = False
-
+    _local_checksum = _remote_checksum = False  # --- Used in tests, to
+                                                #      validate the export
 
     def get_items_to_push(self):
         """ Get the list of items to include in this push. Implement me! """
@@ -322,9 +347,15 @@ class MassPusherConfiguration(DefaultConfiguration):
         shutil.rmtree(self._get_export_root_directory())
 
     def finalize_push(self):
+
+        # --- Pack exported files
         files = self.pack()
+
+        # --- Deliver newly-created archive to destination
         target_url = URL(self.TARGET_URL)
         self.deliver(files, target_url)
+
+        # --- Cleanup the mess
         self.cleanup()
 
 class ZIPPusherConfiguration(MassPusherConfiguration):

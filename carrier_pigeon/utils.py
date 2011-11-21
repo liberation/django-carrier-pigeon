@@ -18,8 +18,8 @@ logger = logging.getLogger('carrier_pigeon.utils')
 
 
 class URL:
-    """Represents an url with information extracted so that it's easly
-    accessible"""
+    """ Represents an url with information extracted so that it's easily
+    accessible. """
 
     def __init__(self, url):
         self.url = url
@@ -44,10 +44,8 @@ class URL:
 
 
 class TreeHash:
-    """
-    Allow to compute a validation hash for a whole directory tree.
-    Used in local vs. remote testing.
-    """
+    """ Allow to compute a validation hash for a whole directory tree.
+    Used in local vs. remote testing. """
 
     def __init__(self, local_root):
         self._local_root = local_root
