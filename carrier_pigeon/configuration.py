@@ -30,6 +30,14 @@ class DefaultConfiguration:
     build an xml file from a template see ``get_output_filename`` and
     ``output`` methods for more information. """
 
+
+    # --- Override us!
+
+    EXPORT_BINARIES = False
+    EXPORT_BINARIES_ACROSS_RELATIONSHIPS = False
+    EXPORT_BINARIES_RELATIONSHIP_DEPTH = 0
+
+
     @property
     def name(self):
         return self.__class__.__name__.lower()
@@ -45,7 +53,7 @@ class DefaultConfiguration:
 
     @property
     def validators(self):
-        """ A list a function that takes the content the content of the file
+        """ A list of functions that validate the contents of the file
         that will be pushed. """
         return list()
 
@@ -66,13 +74,13 @@ class DefaultConfiguration:
         pass
 
     def get_template_name(self, instance):
-        rule_name = self.name
         app_label = instance._meta.app_label.lower()
         class_name = instance._meta.module_name
         template_name = '%s_%s.xml' % (app_label, class_name)
 
-    def get_template_path(self, instance, template_name):
+    def get_template_path(self, instance):
         rule_name = self.name
+        template_name = self.get_template_name(instance)
         return 'carrier_pigeon/%s/%s' % (rule_name, template_name)
 
     def get_extra_context(self, instance):
@@ -100,12 +108,9 @@ class DefaultConfiguration:
         return output.encode("utf-8")
 
     def item_binaries(self, item, depth):
-        try:
-            logging.debug("item_binaries(): depth: %d" % depth)
-            logging.debug("item_binaries(): item: %s" % item)
-            logging.debug("item_binaries(): class: %s" % item.__class__.__name__)
-        except:
-            pass
+        logging.debug("item_binaries(): depth: %d" % depth)
+        logging.debug("item_binaries(): item: %s" % item)
+        logging.debug("item_binaries(): class: %s" % item.__class__.__name__)
 
         binaries = list()
         try:
