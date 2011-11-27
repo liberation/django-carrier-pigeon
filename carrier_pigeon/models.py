@@ -22,8 +22,6 @@ ITEM_TO_PUSH_STATUS = Choices(('NEW', 10, 'New'),
 import managers
 
 
-
-
 class BasicDirtyFieldsMixin(object):
     """Mixin class that stores modified attributes in ``_modified_attrs``.
     ``modified_attrs`` is reset after save"""
@@ -47,6 +45,7 @@ class BasicDirtyFieldsMixin(object):
     def save(self, *args, **kwargs):
         super(BasicDirtyFieldsMixin, self).save(*args, **kwargs)
         self._reset_modified_attrs()
+
 
 class ItemToPush(models.Model):
     """Information about items that should be pushed."""

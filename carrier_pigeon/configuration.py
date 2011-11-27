@@ -30,17 +30,6 @@ class DefaultConfiguration:
     build an xml file from a template see ``get_output_filename`` and
     ``output`` methods for more information. """
 
-
-    # --- OVERRIDE US! :)
-
-    # --- Should the linked binaries be exported as well?
-    EXPORT_BINARIES = False
-    # --- Should we look for binaries across relationships?
-    EXPORT_BINARIES_ACROSS_RELATIONSHIPS = False
-    # --- If so, across how many relationship levels?
-    EXPORT_BINARIES_RELATIONSHIP_DEPTH = 0
-
-
     @property
     def name(self):
         return self.__class__.__name__.lower()
@@ -110,6 +99,19 @@ class DefaultConfiguration:
 
         return '%s_%s' % (instance._meta.module_name, instance.pk)
 
+    def item_binaries(self, item, depth):
+        """ Return the list of binary files linked to this item, by
+        listing file-like fields on this item and its related ones.
+        Should be implemented in a Linker module. """
+
+        return list()
+
+    def output_binaries(self, item):
+        """ Output all `item`'s linked binaries. Return file list.
+        Should be implemented in a Linker module. """
+
+        return list()
+
     def output(self, instance):
         """ Dump this instance's data into an UTF-8 string. """
 
@@ -123,45 +125,6 @@ class DefaultConfiguration:
         output = template.render(context)
         return output.encode("utf-8")
 
-    def item_binaries(self, item, depth):
-        """ Return the list of binary files linked to this item, by
-        listing file-like fields on this item and its related ones. """
-
-        logging.debug("item_binaries(): depth: %d" % depth)
-        logging.debug("item_binaries(): item: %s" % item)
-        logging.debug("item_binaries(): class: %s" % item.__class__.__name__)
-
-        binaries = list()
-        try:
-            fields = item._meta.fields
-        except:
-            return binaries
-
-        for field in fields:
-
-            # --- If this is a "File-like" field, get the file path
-            if is_file_field(field):
-                binaries.append(field.path)
-
-            # --- If this is a "Relation-like" field, recurse
-            elif is_relation_field(field) and depth:
-                for obj in related_objects(item, field):
-                    binaries.extend(self.item_binaries(obj, depth-1))
-
-        return binaries
-
-    def output_binaries(self, item):
-        """ Output all `item`'s linked binaries, according to the 
-        EXPORT_BINARIES, EXPORT_BINARIES_ACROSS_RELATIONSHIPS and
-        EXPORT_BINARIES_RELATIONSHIP_DEPTH settings. Return file list. """
-
-        if not self.EXPORT_BINARIES:
-            return list()
-
-        depth = self.EXPORT_BINARIES_RELATIONSHIP_DEPTH \
-            if self.EXPORT_BINARIES_ACROSS_RELATIONSHIPS else 0
-
-        return self.item_binaries(item, depth)
 
     def post_select(self, instance):
         pass
@@ -302,8 +265,9 @@ class SequentialPusherConfiguration(DefaultConfiguration):
     """
 
     EXPORT_BINARIES = False
+    EXPORT_BINARIES_FIELDS = None
     EXPORT_BINARIES_ACROSS_RELATIONSHIPS = False
-    EXPORT_BINARIES_RELATIONSHIP_DEPTH = 3
+    EXPORT_BINARIES_RELATIONSHIP_DEPTH = 0
 
     def export_item(self, item):
         """ Here, `item` is an `ItemToPush` instance. """
@@ -328,6 +292,7 @@ class MassPusherConfiguration(DefaultConfiguration):
     """
 
     EXPORT_BINARIES = True
+    EXPORT_BINARIES_FIELDS = None
     EXPORT_BINARIES_ACROSS_RELATIONSHIPS = False
     EXPORT_BINARIES_RELATIONSHIP_DEPTH = 3
 
@@ -338,6 +303,10 @@ class MassPusherConfiguration(DefaultConfiguration):
         """ Get the list of items to include in this push. Implement me! """
         return list()
         
+    def add_files_to_export(self, export_dir):
+        """ Add files to export. Implement me! """
+        pass
+
     def pack(self):
         """ Pack files to deliver, return a list of files. Implement me! """
         return list()
@@ -388,6 +357,9 @@ class ZIPPusherConfiguration(MassPusherConfiguration):
 
         dirname = self._get_export_root_directory()
         logging.debug("pack(): dirname: %s" % dirname)
+
+        # --- Add files to export, if necessary
+        self.add_files_to_export(dirname)
 
         zipname = self._get_archive_name()
         logging.debug("pack(): zipname: %s" % zipname)
