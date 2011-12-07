@@ -65,7 +65,7 @@ class TreeHash:
         for root, dirs, files in os.walk(self._local_root, topdown=True):
             for f in files:
                 fn_full = os.path.join(root, f)
-                fn_rel = fn_full.replace(self._local_root, './')
+                fn_rel = fn_full.replace(self._local_root, '.')
                 self._files.append((
                     fn_rel,                   # file name, rel. to local root
                     os.stat(fn_full).st_size, # file size, in bytes
