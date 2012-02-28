@@ -1,3 +1,4 @@
 *.pyc
 *.sqlite
 *~
+example_project/tmp/*
