@@ -160,13 +160,20 @@ CARRIER_PIGEON_MAX_PUSH_ATTEMPTS = 5
 CARRIER_PIGEON_CLASSES = (
     "example_app.onthefly_rules.BelovedPartner",
     "example_app.onthefly_rules.BelovedPartnerPhoto",
-    "example_app.mass_rules.OtherPartner",
+    "example_app.mass_rules.WeeklyDigest",
 )
 CARRIER_PIGEON_PUSH_URLS = {
     "belovedpartner": (
-        "dummy://user:pwd@ftp.org",
+        "dummy://user:pwd@ftp.belovedpartner.org",
+        "dummy://user:pwd@ftp.staging.belovedpartner.org",
     ),
     "belovedpartnerphoto": (
-        "dummy://user:pwd@ftp.org",
+        "dummy://user:pwd@ftp.belovedpartner.org",
+        "dummy://user:pwd@ftp.staging.belovedpartner.org",
+    ),
+    "weeklydigest": (
+        "dummy://user:pwd@ftp.anotherpartner.org",
+        "dummy://user:pwd@ftp.onemore.org",
+        "dummy://user:pwd@ftp.andanother.org",
     )
 }

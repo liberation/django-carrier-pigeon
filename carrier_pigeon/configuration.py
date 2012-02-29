@@ -341,8 +341,8 @@ class MassPusherConfiguration(DefaultConfiguration):
         files = self.pack()
 
         # --- Deliver newly-created archive to destination
-        target_url = URL(self.TARGET_URL)
-        self.deliver(files, target_url)
+        for push_url in self.push_urls:
+            self.deliver(files, URL(push_url))
 
         # --- Cleanup the mess
         self.cleanup()
@@ -363,14 +363,8 @@ class ZIPPusherConfiguration(MassPusherConfiguration):
 
     def _get_archive_name(self):
         """ Helper: build the filename of the ZIP archive to create. """
-        
-        now = datetime.now()
-        
-        return '%s/%s_%s.zip' % (
-            settings.CARRIER_PIGEON_OUTPUT_DIRECTORY,
-            self.name,
-            now.strftime(settings.CARRIER_PIGEON_TIMESTAMP_FORMAT)
-        )
+
+        return '%s/%s.zip' % (settings.CARRIER_PIGEON_OUTPUT_DIRECTORY, self.name)
 
     def pack(self):
         """ Pack files into ZIP archive. """

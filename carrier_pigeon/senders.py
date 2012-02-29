@@ -7,6 +7,7 @@ from ftplib import FTP, error_perm
 from datetime import datetime
 
 from django.conf import settings
+from django.template.defaultfilters import date as format_date
 
 from carrier_pigeon.models import ItemToPush
 
@@ -42,7 +43,7 @@ class DefaultSender(object):
 
             # --- 2. Log delivery feedback
 
-            now = datetime.now().strftime(settings.DATETIME_FORMAT)
+            now = format_date(datetime.now(), settings.DATETIME_FORMAT)
 
             if sent:
                 feedback = u"[%s] '%s': push SUCCESS" % (now, f)

@@ -1,7 +1,7 @@
 import logging
 
-from models import ItemToPush
-from facility import add_item_to_push
+from carrier_pigeon.models import ItemToPush
+from carrier_pigeon.facility import add_item_to_push
 
 
 logger = logging.getLogger('carrier_pigeon.select')
