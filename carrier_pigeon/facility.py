@@ -1,8 +1,8 @@
 import logging
 
-from carrier_pigeon import REGISTRY
 from carrier_pigeon.models import ItemToPush
 from carrier_pigeon.utils import duplicate_row
+
 
 logger = logging.getLogger('carrier_pigeon.facility')
 
@@ -10,6 +10,9 @@ logger = logging.getLogger('carrier_pigeon.facility')
 def add_item_to_push(instance, rule_name):
     """Adds an item to ``ItemToPush`` table aka. push queue"""
     logger.debug('adding %s for %s config' % (instance, rule_name))
+
+    from carrier_pigeon import REGISTRY
+
     try:
         rule = REGISTRY[rule_name]
     except KeyError:

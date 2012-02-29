@@ -19,9 +19,7 @@ ITEM_TO_PUSH_STATUS = Choices(('NEW', 10, 'New'),
                               ('VALIDATION_ERROR', 180, 'Failed validation'))
 
 
-import managers
-
-
+from carrier_pigeon import managers
 
 
 class BasicDirtyFieldsMixin(object):
@@ -47,6 +45,7 @@ class BasicDirtyFieldsMixin(object):
     def save(self, *args, **kwargs):
         super(BasicDirtyFieldsMixin, self).save(*args, **kwargs)
         self._reset_modified_attrs()
+
 
 class ItemToPush(models.Model):
     """Information about items that should be pushed."""

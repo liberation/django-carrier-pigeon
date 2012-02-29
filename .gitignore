@@ -2,3 +2,4 @@
 *.pyo
 *.sqlite
 *~
+example_project/tmp/*

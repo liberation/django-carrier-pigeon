@@ -1,9 +1,6 @@
 import logging
 
 from carrier_pigeon.models import ItemToPush
-
-from carrier_pigeon import REGISTRY
-
 from carrier_pigeon.facility import add_item_to_push
 
 
@@ -13,6 +10,7 @@ logger = logging.getLogger('carrier_pigeon.select')
 def filter(rule_name, configuration, instance, created):
     """Returns True if the rule configuration validates
     this instance, False otherwise."""
+
     try:
         validation = configuration.filter_by_instance_type(instance)
     except Exception, e:
@@ -63,12 +61,13 @@ def filter(rule_name, configuration, instance, created):
         return False
     return True
 
-
 def select(sender, instance=None, created=False, **kwargs):
     """Add instance to ItemToPush queue for each partner that
     validated the instance."""
     logger.debug('post_save caught for %s?pk=%s' %
                  (instance._meta.object_name, instance.pk))
+
+    from carrier_pigeon import REGISTRY
 
     for rule_name, configuration in REGISTRY.iteritems():
         logger.debug('selecting Item for `%s` rule' % rule_name)

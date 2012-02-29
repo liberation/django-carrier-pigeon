@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+{% spaceless %}<doc>
+    <title>{{ object.title }}</title>
+    <updating_date>{{ object.updating_date|date }}</updating_date>
+    <content>{{ object.content|striptags|linebreaks|safe }}</content>
+    {% if object.photo %}
+        <photo>/medias/{{ object.photo.pk }}.jpg</photo>
+    {% else %}
+        <photo/>
+    {% endif %}
+</doc>{% endspaceless %}

@@ -1,16 +1,32 @@
-from django.test import TestCase
+# -*- coding:utf-8 -*-
+
+import os
+import shutil
+import logging
+import datetime
+import threading
 
 from django.db import models
 from django.db.models.signals import class_prepared
 from django.db.models.signals import post_save
+from django.core import management
+from django.core.files import File
+from django.test import TestCase
+
+from django.contrib.webdesign import lorem_ipsum as lipsum
 
 from carrier_pigeon import REGISTRY, add_instance, subscribe_to_post_save
-from carrier_pigeon.configuration import DefaultConfiguration
 from carrier_pigeon.models import BasicDirtyFieldsMixin, ItemToPush
 from carrier_pigeon.select import select
+from carrier_pigeon.senders import FTPSender
+from carrier_pigeon.utils import URL, TreeHash
+from carrier_pigeon.configuration import SequentialPusherConfiguration, \
+    ZIPPusherConfiguration
 
 
-class TestConfiguration(DefaultConfiguration):
+# --- Sequential pusher tests
+
+class TestSequentialConfiguration(SequentialPusherConfiguration):
     push_urls = ('ftp://foo.bar.baz',)
 
     def filter_by_instance_type(self, instance):
@@ -24,26 +40,22 @@ class TestConfiguration(DefaultConfiguration):
 
     def get_directory(self, instance):
         return 'foo/bar/baz'
-add_instance(TestConfiguration())
+add_instance(TestSequentialConfiguration())
 
-
-class TestFilterByInstanceTypeFalse(TestConfiguration):
+class TestFilterByInstanceTypeFalse(TestSequentialConfiguration):
     def filter_by_instance_type(self, instance):
         return False
 add_instance(TestFilterByInstanceTypeFalse())
 
-
-class TestFilterByUpdatesFalse(TestConfiguration):
+class TestFilterByUpdatesFalse(TestSequentialConfiguration):
     def filter_by_updates(self, instance):
         return False
 add_instance(TestFilterByUpdatesFalse())
 
-
-class TestFilterByStateFalse(TestConfiguration):
+class TestFilterByStateFalse(TestSequentialConfiguration):
     def filter_by_state(self, instance):
         return False
 add_instance(TestFilterByStateFalse())
-
 
 class Dummy(models.Model, BasicDirtyFieldsMixin):
     foo = models.IntegerField()
