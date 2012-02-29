@@ -42,8 +42,6 @@ class Command(BaseCommand):
 
         rules = {}
 
-        # --- First, ident/init all the configurations involved in this push
-
         for row in item_to_push_queue():
             rule_name = row.rule_name
             try:
@@ -54,23 +52,16 @@ class Command(BaseCommand):
                         % (rule_name, instance.__class__.__name__, instance.pk))
                 continue
 
-            if rule_name not in rules.keys():
-                rule.initialize_push()
-                rules[rule_name] = rule
-
-        # --- Then, iterate through the items to push
-
-        for row in item_to_push_queue():
             logger.debug(u'processing row id=%s, rule_name=%s' %
                                                         (row.pk, row.rule_name))
+            # Hook at init
+            # (Does this make sense here? Rules instance are persistent...)
+            rule.initialize_push()
+            # Store the fact that we are working on this item
+            # (It will not appear anymore in the queue)
             row.status = ItemToPush.STATUS.IN_PROGRESS
             row.save()
-
-            rule_name = row.rule_name
-            rule = rules[rule_name]
+            # Do the job
             rule.export_item(row)
-
-        # --- Then, finalize the push for each relevant rule
-
-        for rule in rules:
+            # Final hook
             rule.finalize_push()

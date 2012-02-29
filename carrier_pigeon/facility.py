@@ -1,7 +1,7 @@
 import logging
 
-from models import ItemToPush
-from utils import duplicate_row
+from carrier_pigeon.models import ItemToPush
+from carrier_pigeon.utils import duplicate_row
 
 
 logger = logging.getLogger('carrier_pigeon.facility')

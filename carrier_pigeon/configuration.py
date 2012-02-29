@@ -12,19 +12,17 @@ from django.template import Context
 from django.template import loader
 from django.template.base import TemplateDoesNotExist
 
-from carrier_pigeon import REGISTRY
-
-from models import ItemToPush
-from facility import add_item_to_push
-from senders import DefaultSender, FTPSender
-from utils import URL, TreeHash, join_url_to_directory, zipdir, \
+from carrier_pigeon.models import ItemToPush
+from carrier_pigeon.facility import add_item_to_push
+from carrier_pigeon.senders import SENDER_MAPPING
+from carrier_pigeon.utils import URL, TreeHash, join_url_to_directory, zipdir, \
     is_file_field, is_relation_field, related_objects
 
 
 logger = logging.getLogger('carrier_pigeon.configuration')
 
 
-class DefaultConfiguration:
+class DefaultConfiguration(object):
     """ This is an abstract class that you must inherit in your project
     to create a configuration. By default this configuration try to
     build an xml file from a template see ``get_output_filename`` and
@@ -71,6 +69,7 @@ class DefaultConfiguration:
         app_label = instance._meta.app_label.lower()
         class_name = instance._meta.module_name
         template_name = '%s_%s.xml' % (app_label, class_name)
+        return template_name
 
     def get_template_path(self, instance):
         """ Return the fully-qualified path to the template used to dump
@@ -137,7 +136,13 @@ class DefaultConfiguration:
         pass
 
     def export_item(self, item, row=None):
-        """ Export one item. Main entry point of this class's methods. """
+        """
+        Export one item. Main entry point of this class's methods.
+        
+        `item` is a content to push
+        `row` is the optionnal correspondant ItemToPush instance
+        (only for sequential mode).
+        """
 
         rule_name = self.name
 
@@ -155,7 +160,7 @@ class DefaultConfiguration:
                 row.message = message
                 row.save()
             logger.error(message, exc_info=True)
-            raise
+            return output_files
 
         # --- Validate output
         validation = True
@@ -204,9 +209,9 @@ class DefaultConfiguration:
 
         # --- Build output file path for archiving
         output_directory = settings.CARRIER_PIGEON_OUTPUT_DIRECTORY
-        output_directory += '/%s/' % rule_name
+        output_directory += '/%s' % rule_name
         if target_directory:
-            output_directory += '/%s/' % target_directory
+            output_directory += '/%s' % target_directory
 
         # --- Create output directory if necessary
         if not os.path.exists(output_directory):
@@ -255,6 +260,16 @@ class DefaultConfiguration:
 
         pass
 
+    def deliver(self, files, target_url, row=None):
+        """Defines from url scheme the right sender to use, and calls it."""
+        try:
+            sender_class = SENDER_MAPPING[target_url.scheme]
+        except KeyError:
+            logger.error('url scheme %s not supported' % url.scheme)
+        else:
+            sender = sender_class()
+            return sender.deliver(files, target_url, row)
+
 
 class SequentialPusherConfiguration(DefaultConfiguration):
     """
@@ -274,13 +289,18 @@ class SequentialPusherConfiguration(DefaultConfiguration):
 
         row = item
         item = row.content_object
-        files = super(SequentialPusherConfiguration, self).export_item(self, item, row)
-            
-        target_url = join_url_to_directory(row.push_url, target_directory)
+        files = super(SequentialPusherConfiguration, self).export_item(item, row)
+
+        target_directory = self.get_directory(item)  # No need to catch
+                                                     # It has been called once
+        if target_directory:
+            target_url = join_url_to_directory(row.push_url, target_directory)
+        else:
+            target_url = row.push_url
         logger.debug('export_item(): target url: ``%s``' % target_url)
         target_url = URL(target_url)
 
-        return self.deliver(files, target_url, output_path, row)
+        return self.deliver(files, target_url, row)
 
 
 class MassPusherConfiguration(DefaultConfiguration):

@@ -8,13 +8,13 @@ from datetime import datetime
 
 from django.conf import settings
 
-from models import ItemToPush
+from carrier_pigeon.models import ItemToPush
 
 
 logger = logging.getLogger('carrier_pigeon.sender')
 
 
-class DefaultSender:
+class DefaultSender(object):
 
     @abstractmethod
     def _send_file(self, file_path, target_url, row=None):
@@ -42,8 +42,7 @@ class DefaultSender:
 
             # --- 2. Log delivery feedback
 
-            now = datetime.now() \
-                .strftime(settings.CARRIER_PIGEON_TIMESTAMP_FORMAT_LOG)
+            now = datetime.now().strftime(settings.DATETIME_FORMAT)
 
             if sent:
                 feedback = u"[%s] '%s': push SUCCESS" % (now, f)
@@ -116,3 +115,9 @@ class FTPSender(DefaultSender):
         logging.debug(u"_send_file(): disconnected")
 
         return True
+
+# FIXME make it customisable
+SENDER_MAPPING = {
+    'ftp': FTPSender,
+    'dummy': DummySender,
+}

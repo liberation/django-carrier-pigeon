@@ -11,7 +11,7 @@ from zipfile import ZipFile, ZIP_DEFLATED
 
 from django.db.models import fields
 
-from models import ItemToPush
+from carrier_pigeon.models import ItemToPush
 
 
 logger = logging.getLogger('carrier_pigeon.utils')

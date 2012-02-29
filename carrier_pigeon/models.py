@@ -19,7 +19,7 @@ ITEM_TO_PUSH_STATUS = Choices(('NEW', 10, 'New'),
                               ('VALIDATION_ERROR', 180, 'Failed validation'))
 
 
-import managers
+from carrier_pigeon import managers
 
 
 class BasicDirtyFieldsMixin(object):
