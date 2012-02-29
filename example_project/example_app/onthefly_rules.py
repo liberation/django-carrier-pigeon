@@ -6,7 +6,7 @@ from carrier_pigeon.facility import add_item_to_push
 from carrier_pigeon.validators import wellformed_xml_validator
 from carrier_pigeon.configuration import SequentialPusherConfiguration
 
-from models import Story
+from example_app.models import Story
 
 
 class BelovedPartnerPhoto(SequentialPusherConfiguration):

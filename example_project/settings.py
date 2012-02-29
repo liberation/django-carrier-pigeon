@@ -126,8 +126,8 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     # Uncomment the next line to enable admin documentation:
     # 'django.contrib.admindocs',
-    'example_app',
     'carrier_pigeon',
+    'example_app',
 )
 
 # A sample logging configuration. The only tangible logging
@@ -154,7 +154,7 @@ LOGGING = {
 }
 
 # --- Pigeon configuration
-CARRIER_PIGEON_MAX_AGE = 3600*24*30 # 30 days
+CARRIER_PIGEON_MAX_AGE = 3600*24*30  # 30 days
 CARRIER_PIGEON_OUTPUT_DIRECTORY = os.path.join(SITE_ROOT, 'tmp', 'export')
 CARRIER_PIGEON_MAX_PUSH_ATTEMPTS = 5
 CARRIER_PIGEON_CLASSES = (
@@ -164,9 +164,9 @@ CARRIER_PIGEON_CLASSES = (
 )
 CARRIER_PIGEON_PUSH_URLS = {
     "belovedpartner": (
-        "dummy://ybon:ybon@10.0.0.1",
+        "dummy://user:pwd@ftp.org",
     ),
     "belovedpartnerphoto": (
-        "dummy://ybon:ybon@10.0.0.1",
+        "dummy://user:pwd@ftp.org",
     )
 }
