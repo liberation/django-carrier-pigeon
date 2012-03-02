@@ -1,7 +1,9 @@
 # -*- coding:utf-8 -*-
 
-import os, os.path
+import os
+import os.path
 import logging
+
 from abc import abstractmethod
 from ftplib import FTP, error_perm
 from datetime import datetime
@@ -46,7 +48,7 @@ class DefaultSender(object):
                     sent = self._send_file(f, target_url, row)
                     break
                 except Exception, ex:
-                    pass                                        
+                    pass
 
             # --- 2. Log delivery feedback
 
@@ -76,7 +78,7 @@ class DefaultSender(object):
             raise ValueError("Files must be stored in the configuration directory.")
         relative_path = file_path[len(self.configuration.root_directory):]
         path_elements = os.path.split(relative_path)
-        if len(path_elements) > 1: 
+        if len(path_elements) > 1:
             relative_dir = path_elements[0]
         else:
             relative_dir = ""
@@ -108,7 +110,7 @@ class FTPSender(DefaultSender):
         else:
             target_url.login()
         logging.debug(u"_send_file(): logged in")
-        
+
         print "target_url.path", target_url.path
         target_path = os.path.join(
             target_url.path,
@@ -127,7 +129,7 @@ class FTPSender(DefaultSender):
                 # Don't catch the error now, in case the error_perm was for
                 # another reason
                 ftp.cwd(directory)
-            
+
         filename = os.path.split(file_path)[1]
         logging.debug(u"_send_file(): filename: %s" % filename)
 

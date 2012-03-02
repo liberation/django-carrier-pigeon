@@ -2,9 +2,9 @@ import shutil
 
 import os.path
 
-from django.conf import settings
 from django.template import Context
 from django.template import loader
+
 
 class BaseOutputMaker(object):
 
@@ -38,7 +38,7 @@ class BaseOutputMaker(object):
         """
         Must return the directory where to store the output, relatively to the
         configuration root (remote and local are the same).
-        
+
         Use an empty string for no directory.
         """
         return ""
@@ -53,7 +53,7 @@ class BaseOutputMaker(object):
     def local_final_path(self):
         """
         Returns the final file field in the local file system.
-        
+
         This final path is computed like this:
         / -------------------------- / -------------------------- / ---------- /
         / carrier pigeon working dir / current config working dir / remote dir /
@@ -78,7 +78,7 @@ class BaseOutputMaker(object):
         """
         Must return the path (including file_name) of the output, relatively to
         the configuration root.
-        
+
         It must not have a slash a the beginning.
         """
         return os.path.join(
@@ -98,7 +98,7 @@ class TemplateOutputMaker(BaseOutputMaker):
         return template_name
 
     def get_template_path(self):
-        """Returns the fully-qualified path to the template to build the export. """
+        """Returns the fully-qualified path to the template to build the export."""
 
         rule_name = self.configuration.name
         template_name = self.get_template_name()
@@ -134,14 +134,14 @@ class TemplateOutputMaker(BaseOutputMaker):
     def release(self, output):
         """
         Dump the data output in the final file.
-        
+
         `output` here is the XML content.
         """
         f = open(self.local_final_path, 'w')
         f.write(output)
         f.close()
         return self.local_final_path
-        
+
 
 class BinaryOutputMaker(BaseOutputMaker):
 
@@ -180,4 +180,3 @@ class BinaryOutputMaker(BaseOutputMaker):
         """
         shutil.copy(output, self.local_final_path)
         return self.local_final_path
-

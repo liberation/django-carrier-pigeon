@@ -61,6 +61,7 @@ def filter(rule_name, model_supervisor, instance, created):
         return False
     return True
 
+
 def select(sender, instance=None, created=False, **kwargs):
     """Add instance to ItemToPush queue for each partner that
     validated the instance."""
@@ -76,9 +77,9 @@ def select(sender, instance=None, created=False, **kwargs):
         model_supervisor = None
         try:
             model_supervisor = configuration.get_supervisor_for_item(instance)
-        except Exception, e:
+        except Exception:
             pass
-        if (not model_supervisor 
+        if (not model_supervisor
             or not filter(rule_name, model_supervisor, instance, created)):
             continue
 

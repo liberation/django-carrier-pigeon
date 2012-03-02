@@ -1,22 +1,15 @@
 # -*- coding:utf-8 -*-
 
-import os, os.path
+import os
+import os.path
 import shutil
 import logging
 
-from abc import abstractmethod
-from datetime import datetime
-
 from django.conf import settings
-from django.template import Context
-from django.template import loader
-from django.template.base import TemplateDoesNotExist
 
 from carrier_pigeon.models import ItemToPush
-from carrier_pigeon.facility import add_item_to_push
 from carrier_pigeon.senders import SENDER_MAPPING
-from carrier_pigeon.utils import URL, TreeHash, join_url_to_directory, zipdir, \
-    is_file_field, is_relation_field, related_objects
+from carrier_pigeon.utils import URL, TreeHash, zipdir
 
 
 logger = logging.getLogger('carrier_pigeon.configuration')
@@ -51,12 +44,13 @@ class DefaultConfiguration(object):
     def get_supervisor_for_item(self, item):
         """
         Return the correct supervisor for the item.
-        
+
         You *must* implement this method.
         """
         raise NotImplementedError("You must implement this method.")
 
-    def prevent_from_failing(self, func, error_status, row, func_args=None, func_kwargs=None, default=None):
+    def prevent_from_failing(self, func, error_status, row, func_args=None,
+                                                func_kwargs=None, default=None):
         """
         Wrapper that call some function, catch any error raised and store it.
         """
@@ -69,12 +63,12 @@ class DefaultConfiguration(object):
         try:
             returned = func(*func_args, **func_kwargs)
         except Exception, e:
-            message  = (u"""Exception during %s call. """
-                        u"""Exception ``%s`` raised: %s""") % (
-                            func.__name__,
-                            e.__class__.__name__,
-                            e.message,
-                        )
+            message = (u"""Exception during %s call. """
+                       u"""Exception ``%s`` raised: %s""") % (
+                           func.__name__,
+                           e.__class__.__name__,
+                           e.message,
+                       )
             if row:
                 row.status = error_status
                 row.message = message
@@ -115,7 +109,7 @@ class DefaultConfiguration(object):
     def output_files_from_item(self, item, row=None):
         """
         Export one item. Main entry point of this class's methods.
-        
+
         `item` is a content to push
         `row` is the optionnal correspondant ItemToPush instance
         (only for sequential mode).
@@ -142,7 +136,6 @@ class DefaultConfiguration(object):
             default=[],
         )
 
-        
         # --- Build outputs
         for output_maker in output_makers:
             output = self.prevent_from_failing(
@@ -180,7 +173,7 @@ class DefaultConfiguration(object):
             # --- Create output directory if necessary
             if not os.path.exists(output_maker.local_final_directory):
                 os.makedirs(output_maker.local_final_directory)
-            
+
             # --- Release the final file locally
             local_final_path = self.prevent_from_failing(
                 output_maker.release,
@@ -188,7 +181,7 @@ class DefaultConfiguration(object):
                 row,
                 func_args=[output],
             )
-            
+
             if local_final_path:
                 output_files.append(local_final_path)
 
@@ -196,7 +189,7 @@ class DefaultConfiguration(object):
         for related_item in supervisor.get_related_items(item):
             related_files = self.output_files_from_item(related_item, row)
             output_files += related_files
-        
+
         return output_files
 
     def process_item(self, item, row=None):
@@ -215,10 +208,9 @@ class DefaultConfiguration(object):
         try:
             sender_class = SENDER_MAPPING[target_url.scheme]
         except KeyError:
-            logger.error('url scheme %s not supported' % url.scheme)
+            logger.error('url scheme %s not supported' % target_url.scheme)
         else:
             sender = sender_class(self)
-            configuration_root = self.root_directory
             return sender.deliver(files, target_url, row)
 
 
@@ -245,7 +237,7 @@ class MassPusherConfiguration(DefaultConfiguration):
     """
     Configurations inheriting this class will be able to export a whole batch
     of files at once onto the destination server.
-    
+
     Management command: python manage.py pigeon_mass_push <config_name>
     """
 
@@ -255,7 +247,7 @@ class MassPusherConfiguration(DefaultConfiguration):
     def get_items_to_push(self):
         """ Get the list of items to include in this push. Implement me! """
         return list()
-        
+
     def add_files_to_export(self, export_dir):
         """ Add files to export. Implement me! """
         pass
@@ -285,10 +277,11 @@ class MassPusherConfiguration(DefaultConfiguration):
     def tmp_directory(self):
         """
         Relative directory to temporary store files in.
-        
+
         **Must** be defined for archive pushers.
         """
         return ".work"
+
 
 class ZIPPusherConfiguration(MassPusherConfiguration):
     """
@@ -325,7 +318,7 @@ class ZIPPusherConfiguration(MassPusherConfiguration):
                 % (zipname, dirname))
             raise
         except Exception, e:
-            message  = u"pack(): Exception during archive creation. "
+            message = u"pack(): Exception during archive creation. "
             message += u'Exception ``%s`` raised: %s ' \
                 % (e.__class__.__name__, e.message)
             logging.error(message, exc_info=True)
@@ -347,4 +340,4 @@ class TARPusherConfiguration(MassPusherConfiguration):
 
 class DirectoryPusherConfiguration(MassPusherConfiguration):
     """ Later...? """
-    pass 
+    pass
