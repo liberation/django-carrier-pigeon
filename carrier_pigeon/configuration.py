@@ -186,7 +186,7 @@ class DefaultConfiguration(object):
                 output_files.append(local_final_path)
 
         # --- Manage related items, if any
-        for related_item in supervisor.get_related_items(item):
+        for related_item in supervisor.get_related_items():
             related_files = self.output_files_from_item(related_item, row)
             output_files += related_files
 

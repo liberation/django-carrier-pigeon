@@ -12,7 +12,7 @@ def filter(rule_name, model_supervisor, instance, created):
     this instance, False otherwise."""
 
     try:
-        validation = model_supervisor.filter_by_instance_type(instance)
+        validation = model_supervisor.filter_by_instance_type()
     except Exception, e:
         logger.error('error during filter_by_instance_type')
         logger.error('catched exception message: %s' % e.message)
@@ -29,7 +29,7 @@ def filter(rule_name, model_supervisor, instance, created):
     if not created:
 
         try:
-            validation = model_supervisor.filter_by_updates(instance)
+            validation = model_supervisor.filter_by_updates()
         except Exception, e:
             logger.error('error during filter_by_updates')
             logger.error('catched exception message: %s' % e.message)
@@ -45,7 +45,7 @@ def filter(rule_name, model_supervisor, instance, created):
             return False
 
     try:
-        validation = model_supervisor.filter_by_state(instance)
+        validation = model_supervisor.filter_by_state()
     except Exception, e:
         logger.error('error during filter_by_state')
         logger.error('catched exception message: %s' % e.message)

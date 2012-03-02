@@ -12,8 +12,8 @@ from example_app.models import Story, Photo
 
 class WeeklyDigestStorySupervisor(BaseSupervisor):
 
-    def get_related_items(self, item):
-        return [item.photo]
+    def get_related_items(self):
+        return [self.instance.photo]
 
     def get_output_makers(self):
         return [TemplateOutputMaker(self.configuration, self.instance)]

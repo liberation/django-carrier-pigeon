@@ -47,7 +47,7 @@ class BaseSupervisor(object):
     def post_select(self, instance):
         pass
 
-    def get_related_items(self, item):
+    def get_related_items(self):
         """
         Implement this if you want some related items to be
         """
