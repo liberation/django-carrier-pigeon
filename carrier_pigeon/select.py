@@ -2,6 +2,7 @@ import logging
 
 from carrier_pigeon.models import ItemToPush
 from carrier_pigeon.facility import add_item_to_push
+from carrier_pigeon.configuration import SequentialPusherConfiguration
 
 
 logger = logging.getLogger('carrier_pigeon.select')
@@ -71,6 +72,9 @@ def select(sender, instance=None, created=False, **kwargs):
     from carrier_pigeon import REGISTRY
 
     for rule_name, configuration in REGISTRY.iteritems():
+        if not SequentialPusherConfiguration in configuration.__class__.mro():
+            # Only the sequential configurations are concerned here
+            continue
         logger.debug('selecting Item for `%s` rule' % rule_name)
         # if instance doesn't match configuration
         # try another rule_name
