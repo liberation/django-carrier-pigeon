@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
 
-import os
+import os, os.path
 import logging
 from abc import abstractmethod
 from ftplib import FTP, error_perm
@@ -17,19 +17,26 @@ logger = logging.getLogger('carrier_pigeon.sender')
 
 class DefaultSender(object):
 
+    def __init__(self, configuration):
+        self.configuration = configuration
+
     @abstractmethod
     def _send_file(self, file_path, target_url, row=None):
         """ Send one file to destination. Implement me! """
         pass
 
     def deliver(self, file_list, target_url, row=None):
-        """ Deliver file(s) to destination. """
+        """
+        Deliver file(s) to destination.
+
+        `configuration_root` is used to keep the files tree.
+        """
 
         ok = True
         max_ = settings.CARRIER_PIGEON_MAX_PUSH_ATTEMPTS
 
         for f in file_list:
-            
+
             # --- 1. Send file
 
             sent = False
@@ -61,6 +68,22 @@ class DefaultSender(object):
 
         return ok
 
+    def get_relative_directory_for_file(self, file_path):
+        """
+        Get the place in the files tree where to push the file remotely.
+        """
+        if not file_path.startswith(self.configuration.root_directory):
+            raise ValueError("Files must be stored in the configuration directory.")
+        relative_path = file_path[len(self.configuration.root_directory):]
+        path_elements = os.path.split(relative_path)
+        if len(path_elements) > 1: 
+            relative_dir = path_elements[0]
+        else:
+            relative_dir = ""
+        if relative_dir.startswith("/"):
+            relative_dir = relative_dir[1:]  # It must be relative...
+        return relative_dir
+
 
 class DummySender(DefaultSender):
 
@@ -86,10 +109,11 @@ class FTPSender(DefaultSender):
             target_url.login()
         logging.debug(u"_send_file(): logged in")
         
-        # Path should not end with a /
-        target_path = target_url.path
-        if target_path.endswith("/"):
-            target_path = target_url.path[:-1]
+        print "target_url.path", target_url.path
+        target_path = os.path.join(
+            target_url.path,
+            self.get_relative_directory_for_file(file_path)
+        )
         logging.debug(u"_send_file(): target_path: %s" % target_path)
 
         # Go to remote directory (create it if needed)

@@ -147,6 +147,10 @@ def related_objects(instance, field):
 
 # From: http://coreygoldberg.blogspot.com/2009/07/python-zip-directories-recursively.html
 def zipdir(dir, zip_file):
+    """
+    dir = directory where to get files to zip
+    zip_file = path to the zip file to generate
+    """
     zip_ = ZipFile(zip_file, 'w', compression=ZIP_DEFLATED)
     root_len = len(os.path.abspath(dir))
     for root, dirs, files in os.walk(dir):

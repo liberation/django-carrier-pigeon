@@ -48,8 +48,14 @@ class Command(BaseCommand):
                 rule = REGISTRY[rule_name]
             except KeyError:
                 logger.warning(
-                    u'Asked rule "%s" does not exist (instance : %s %d)'
-                        % (rule_name, instance.__class__.__name__, instance.pk))
+                    u'Asked rule "%s" does not exist (instance : %s %d)' % (
+                        rule_name, 
+                        row.content_object.__class__.__name__, 
+                        row.content_object.pk,
+                    )
+                )
+                row.status = ItemToPush.STATUS.PUSH_ERROR
+                row.save()
                 continue
 
             logger.debug(u'processing row id=%s, rule_name=%s' %
@@ -62,6 +68,6 @@ class Command(BaseCommand):
             row.status = ItemToPush.STATUS.IN_PROGRESS
             row.save()
             # Do the job
-            rule.export_item(row)
+            rule.process_item(row.content_object, row)
             # Final hook
             rule.finalize_push()

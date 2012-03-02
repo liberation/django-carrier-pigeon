@@ -7,12 +7,12 @@ from carrier_pigeon.facility import add_item_to_push
 logger = logging.getLogger('carrier_pigeon.select')
 
 
-def filter(rule_name, configuration, instance, created):
-    """Returns True if the rule configuration validates
+def filter(rule_name, model_supervisor, instance, created):
+    """Returns True if the rule model_supervisor validates
     this instance, False otherwise."""
 
     try:
-        validation = configuration.filter_by_instance_type(instance)
+        validation = model_supervisor.filter_by_instance_type(instance)
     except Exception, e:
         logger.error('error during filter_by_instance_type')
         logger.error('catched exception message: %s' % e.message)
@@ -29,7 +29,7 @@ def filter(rule_name, configuration, instance, created):
     if not created:
 
         try:
-            validation = configuration.filter_by_updates(instance)
+            validation = model_supervisor.filter_by_updates(instance)
         except Exception, e:
             logger.error('error during filter_by_updates')
             logger.error('catched exception message: %s' % e.message)
@@ -45,7 +45,7 @@ def filter(rule_name, configuration, instance, created):
             return False
 
     try:
-        validation = configuration.filter_by_state(instance)
+        validation = model_supervisor.filter_by_state(instance)
     except Exception, e:
         logger.error('error during filter_by_state')
         logger.error('catched exception message: %s' % e.message)
@@ -73,7 +73,13 @@ def select(sender, instance=None, created=False, **kwargs):
         logger.debug('selecting Item for `%s` rule' % rule_name)
         # if instance doesn't match configuration
         # try another rule_name
-        if not filter(rule_name, configuration, instance, created):
+        model_supervisor = None
+        try:
+            model_supervisor = configuration.get_supervisor_for_item(instance)
+        except Exception, e:
+            pass
+        if (not model_supervisor 
+            or not filter(rule_name, model_supervisor, instance, created)):
             continue
 
         # try to create a row for each push_url

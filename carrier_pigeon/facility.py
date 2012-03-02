@@ -31,4 +31,9 @@ def add_item_to_push(instance, rule_name):
             row.save()
             logger.debug('Added item in the ItemToPush queue @ %s' %
                          row.pk)
-        rule.post_select(instance)
+        try:
+            model_supervisor = rule.get_supervisor_for_item(instance)
+        except:
+            pass
+        else:
+            model_supervisor.post_select(instance)

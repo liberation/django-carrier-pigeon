@@ -5,18 +5,22 @@ from django.contrib.contenttypes import generic
 from extended_choices import Choices
 
 
-ITEM_TO_PUSH_STATUS = Choices(('NEW', 10, 'New'),
-                              ('IN_PROGRESS', 20, 'In progress'),
-                              ('PUSHED', 50, 'Pushed'),
-                              # ERRORS SHOULD BE OVER 100
-                              ('PUSH_ERROR', 110, 'Push error'),
-                              ('OUTPUT_GENERATION_ERROR', 120, 'Could not generate output file'),
-                              ('SEND_ERROR', 130, 'Could not send file'),
-                              ('FILTER_BY_INSTANCE_TYPE_ERROR', 140, 'Error in select during filter by instance type'),
-                              ('FILTER_BY_UPDATES_ERROR', 150, 'Error in select during filter by updates'),
-                              ('FILTER_BY_STATE_ERROR', 160, 'Error in select during filter by state'),
-                              ('GET_DIRECTORY_ERROR', 170, 'Error in select during get directory'),
-                              ('VALIDATION_ERROR', 180, 'Failed validation'))
+ITEM_TO_PUSH_STATUS = Choices(
+    ('NEW', 10, 'New'),
+    ('IN_PROGRESS', 20, 'In progress'),
+    ('PUSHED', 50, 'Pushed'),
+    # ERRORS SHOULD BE OVER 100
+    ('PUSH_ERROR', 110, 'Push error'),
+    ('OUTPUT_GENERATION_ERROR', 120, 'Could not generate output file'),
+    ('SEND_ERROR', 130, 'Could not send file'),
+    ('FILTER_BY_INSTANCE_TYPE_ERROR', 140, 'Error in select during filter by instance type'),
+    ('FILTER_BY_UPDATES_ERROR', 150, 'Error in select during filter by updates'),
+    ('FILTER_BY_STATE_ERROR', 160, 'Error in select during filter by state'),
+    ('GET_DIRECTORY_ERROR', 170, 'Error in select during get directory'),
+    ('VALIDATION_ERROR', 180, 'Failed validation'),
+    ('SUPERVISOR_ERROR', 190, 'No Supervisor found'),
+    ('OUTPUT_MARKER_ERROR', 200, 'No output_marker found'),
+)
 
 
 from carrier_pigeon import managers

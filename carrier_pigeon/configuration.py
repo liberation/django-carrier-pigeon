@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
 
-import os
+import os, os.path
 import shutil
 import logging
 
@@ -41,93 +41,6 @@ class DefaultConfiguration(object):
             logger.warning(u'No push url setted for rule "%s"' % self.name)
             return []
 
-    @property
-    def validators(self):
-        """ A list of functions that validate the contents of the file
-        that will be pushed. """
-        return list()
-
-    @abstractmethod
-    def filter_by_instance_type(self, instance):
-        pass
-
-    @abstractmethod
-    def filter_by_updates(self, instance):
-        pass
-
-    @abstractmethod
-    def filter_by_state(self, instance):
-        pass
-
-    @abstractmethod
-    def get_directory(self, instance):
-        pass
-
-    def get_template_name(self, instance):
-        """ Return the name of the template used to dump the object data. """
-
-        app_label = instance._meta.app_label.lower()
-        class_name = instance._meta.module_name
-        template_name = '%s_%s.xml' % (app_label, class_name)
-        return template_name
-
-    def get_template_path(self, instance):
-        """ Return the fully-qualified path to the template used to dump
-        the object data. """
-
-        rule_name = self.name
-        template_name = self.get_template_name(instance)
-        return 'carrier_pigeon/%s/%s' % (rule_name, template_name)
-
-    def get_extra_context(self, instance):
-        """ If there needs to be some extra context passed to the template,
-        just override this method in your own configuration implementation. """
-
-        return dict()
-
-    def get_output_filename(self, instance):
-        """ Return the filename used to dump the object data. """
-
-        return '%s_%s_%s.xml' % (instance._meta.app_label.lower(),
-                                 instance._meta.module_name,
-                                 instance.pk)
-
-    def get_binary_path(self, instance):
-        """ Return the path into which to store the item's related
-        binary files. """
-
-        return '%s_%s' % (instance._meta.module_name, instance.pk)
-
-    def item_binaries(self, item, depth):
-        """ Return the list of binary files linked to this item, by
-        listing file-like fields on this item and its related ones.
-        Should be implemented in a Linker module. """
-
-        return list()
-
-    def output_binaries(self, item):
-        """ Output all `item`'s linked binaries. Return file list.
-        Should be implemented in a Linker module. """
-
-        return list()
-
-    def output(self, instance):
-        """ Dump this instance's data into an UTF-8 string. """
-
-        template_path = self.get_template_path(instance)
-        template = loader.get_template(template_path)
-
-        context = self.get_extra_context(instance)
-        context['object'] = instance
-        context = Context(context)
-
-        output = template.render(context)
-        return output.encode("utf-8")
-
-
-    def post_select(self, instance):
-        pass
-
     def initialize_push(self):
         """ Right here, it's nothing more than a placeholder, but you may use
         this method in your subclass if you need a hook to execute some code
@@ -135,7 +48,71 @@ class DefaultConfiguration(object):
 
         pass
 
-    def export_item(self, item, row=None):
+    def get_supervisor_for_item(self, item):
+        """
+        Return the correct supervisor for the item.
+        
+        You *must* implement this method.
+        """
+        raise NotImplementedError("You must implement this method.")
+
+    def prevent_from_failing(self, func, error_status, row, func_args=None, func_kwargs=None, default=None):
+        """
+        Wrapper that call some function, catch any error raised and store it.
+        """
+        if func_args is None:
+            func_args = list()
+        if func_kwargs is None:
+            func_kwargs = dict()
+        returned = default
+
+        try:
+            returned = func(*func_args, **func_kwargs)
+        except Exception, e:
+            message  = (u"""Exception during %s call. """
+                        u"""Exception ``%s`` raised: %s""") % (
+                            func.__name__,
+                            e.__class__.__name__,
+                            e.message,
+                        )
+            if row:
+                row.status = error_status
+                row.message = message
+                row.save()
+            logger.error(message, exc_info=True)
+        return returned
+
+    @property
+    def root_directory(self):
+        """
+        Returns the root directory of the configuration.
+
+        All other pathes are relative to this directory.
+        """
+        return os.path.join(
+            settings.CARRIER_PIGEON_OUTPUT_DIRECTORY,
+            self.name,
+        )
+
+    @property
+    def working_directory(self):
+        """
+        Effective directory where the file are stored by the OutputMakers.
+        """
+        return os.path.join(
+            self.root_directory,
+            self.tmp_directory,
+        )
+
+    @property
+    def tmp_directory(self):
+        """
+        Relative working directory. Used by archive pushers to store temporary
+        the files that will be archived.
+        """
+        return ""
+
+    def output_files_from_item(self, item, row=None):
         """
         Export one item. Main entry point of this class's methods.
         
@@ -144,113 +121,86 @@ class DefaultConfiguration(object):
         (only for sequential mode).
         """
 
-        rule_name = self.name
-
         output_files = []
 
-        # --- Build output
-        try:
-            output = self.output(item)
-        except Exception, e:
-            message  = u"Exception during output generation. "
-            message += u'Exception ``%s`` raised: %s ' % (
-                            e.__class__.__name__, e.message)
-            if row:
-                row.status = ItemToPush.STATUS.OUTPUT_GENERATION_ERROR
-                row.message = message
-                row.save()
-            logger.error(message, exc_info=True)
+        # --- Retrieve model supervisor
+        supervisor = self.prevent_from_failing(
+            self.get_supervisor_for_item,
+            ItemToPush.STATUS.SUPERVISOR_ERROR,
+            row,
+            func_args=[item],
+        )
+
+        if not supervisor:
             return output_files
 
-        # --- Validate output
-        validation = True
-        for validator in self.validators:
-            try:
-                validator(output)
-                logger.debug('validation ``%s`` passed successfully'
-                                                       % validator.__name__)
-            except Exception, e:
+        # --- Retrieve ouput makers
+        output_makers = self.prevent_from_failing(
+            supervisor.get_output_makers,
+            ItemToPush.STATUS.OUTPUT_MARKER_ERROR,
+            row,
+            default=[],
+        )
+
+        
+        # --- Build outputs
+        for output_maker in output_makers:
+            output = self.prevent_from_failing(
+                output_maker.output,
+                ItemToPush.STATUS.OUTPUT_GENERATION_ERROR,
+                row,
+            )
+            if not output:
+                continue
+
+            # --- Validate output
+            validators = output_maker.validators
+            # If there are validators, set the validation to False
+            # because validors return True if validation passed and raise
+            # an error if not
+            if validators:
                 validation = False
-                message  = u"Validation ``%s`` failed ! " % validator.__name__
-                message += u'Caught exception %s : %s' % (
-                            e.__class__.__name__, e.message)
-                if row:
-                    row.status = ItemToPush.STATUS.VALIDATION_ERROR
-                    if row.message != None:
-                        row.message += '\n' + message
-                    else:
-                        row.message = message
-                    row.save()
-                logger.error(message, exc_info=True)
+                for validator in validators:
+                    validation = self.prevent_from_failing(
+                        validator,
+                        ItemToPush.STATUS.VALIDATION_ERROR,
+                        row,
+                        func_args=[output],
+                        default=False
+                    )
+                    if not validation:
+                        break  # escape from first for loop
 
-        if not validation:  # --- If one validator did not pass we
-                            #      do no want to send the file
-            logger.debug('the output was not validated')
-            raise
+                if not validation:  # --- If one validator did not pass we
+                                    #      do no want to send the file
+                    logger.debug('the output was not validated')
+                    continue  # We don't want the export process to be stopped
+                              # Jump to next output
+
+            # --- Create output directory if necessary
+            if not os.path.exists(output_maker.local_final_directory):
+                os.makedirs(output_maker.local_final_directory)
+            
+            # --- Release the final file locally
+            local_final_path = self.prevent_from_failing(
+                output_maker.release,
+                ItemToPush.STATUS.OUTPUT_GENERATION_ERROR,
+                row,
+                func_args=[output],
+            )
+            
+            if local_final_path:
+                output_files.append(local_final_path)
+
+        # --- Manage related items, if any
+        for related_item in supervisor.get_related_items(item):
+            related_files = self.output_files_from_item(related_item, row)
+            output_files += related_files
         
-        output_filename = self.get_output_filename(item)
-        
-        # --- Get target directory
-        target_directory = None
-        try:
-            target_directory = self.get_directory(item)
-        except Exception, e:
-            message = u"Error during ``get_directory``. "
-            message += u"%s: %s" % (
-                            e.__class__.__name__, e.message)
-            if row:
-                row = ItemToPush(rule_name=rule_name,
-                                 content_object=instance)
-                row.status = ItemToPush.STATUS.GET_DIRECTORY_ERROR
-                row.message = message
-                row.save()
-            logger.error(message, exc_info=True)
-            raise
-
-        # --- Build output file path for archiving
-        output_directory = settings.CARRIER_PIGEON_OUTPUT_DIRECTORY
-        output_directory += '/%s' % rule_name
-        if target_directory:
-            output_directory += '/%s' % target_directory
-
-        # --- Create output directory if necessary
-        if not os.path.exists(output_directory):
-            os.makedirs(output_directory)
-        output_path = '%s/%s' % (output_directory, output_filename)
-
-        # --- Write output file
-        f = open(output_path, 'w')
-        f.write(output)
-        f.close()
-        output_files.append(output_path)
-
-        # --- Add linked binaries, if any
-        binaries = self.output_binaries(item)
-        if binaries:
-            bin_dir = '%s%s' % (output_directory, self.get_binary_path(item))
-            try:
-                os.makedirs(bin_dir)
-                logging.debug('export_item(): created dir: %s' % bin_dir)
-            except:
-                pass
-
-            # --- Copy all binary files to the output directory
-            for binary in binaries:
-                try:
-                    bin_path = os.path.join(bin_dir, os.path.basename(binary))
-                    shutil.copy(binary, bin_path)
-                    output_files.append(
-                        '%s/%s' % (bin_dir, os.path.basename(binary)))
-                    logging.info(
-                        'export_item(): Copy successful: %s to %s'
-                            % (binary, bin_path))
-
-                except Exception, ex:
-                    logging.error(
-                        'export_item(): Error while copying %s to %s: %s'
-                            % (binary, bin_path, ex))
-
         return output_files
+
+    def process_item(self, item, row=None):
+        return self.output_files_from_item(item, row)
 
     def finalize_push(self):
         """ Right here, it's nothing more than a placeholder, but you may use
@@ -267,7 +217,8 @@ class DefaultConfiguration(object):
         except KeyError:
             logger.error('url scheme %s not supported' % url.scheme)
         else:
-            sender = sender_class()
+            sender = sender_class(self)
+            configuration_root = self.root_directory
             return sender.deliver(files, target_url, row)
 
 
@@ -279,24 +230,11 @@ class SequentialPusherConfiguration(DefaultConfiguration):
     Associated management command: python manage.py pigeon_push
     """
 
-    EXPORT_BINARIES = False
-    EXPORT_BINARIES_FIELDS = None
-    EXPORT_BINARIES_ACROSS_RELATIONSHIPS = False
-    EXPORT_BINARIES_RELATIONSHIP_DEPTH = 0
+    def process_item(self, item, row):
 
-    def export_item(self, item):
-        """ Here, `item` is an `ItemToPush` instance. """
+        files = self.output_files_from_item(item, row)
 
-        row = item
-        item = row.content_object
-        files = super(SequentialPusherConfiguration, self).export_item(item, row)
-
-        target_directory = self.get_directory(item)  # No need to catch
-                                                     # It has been called once
-        if target_directory:
-            target_url = join_url_to_directory(row.push_url, target_directory)
-        else:
-            target_url = row.push_url
+        target_url = row.push_url
         logger.debug('export_item(): target url: ``%s``' % target_url)
         target_url = URL(target_url)
 
@@ -310,11 +248,6 @@ class MassPusherConfiguration(DefaultConfiguration):
     
     Management command: python manage.py pigeon_mass_push <config_name>
     """
-
-    EXPORT_BINARIES = True
-    EXPORT_BINARIES_FIELDS = None
-    EXPORT_BINARIES_ACROSS_RELATIONSHIPS = False
-    EXPORT_BINARIES_RELATIONSHIP_DEPTH = 3
 
     _local_checksum = _remote_checksum = False  # --- Used in tests, to
                                                 #      validate the export
@@ -333,7 +266,8 @@ class MassPusherConfiguration(DefaultConfiguration):
 
     def cleanup(self):
         """ Delete temporary files in export directory. """
-        shutil.rmtree(self._get_export_root_directory())
+        if os.path.exists(self.working_directory):
+            shutil.rmtree(self.working_directory)
 
     def finalize_push(self):
 
@@ -347,35 +281,41 @@ class MassPusherConfiguration(DefaultConfiguration):
         # --- Cleanup the mess
         self.cleanup()
 
+    @property
+    def tmp_directory(self):
+        """
+        Relative directory to temporary store files in.
+        
+        **Must** be defined for archive pushers.
+        """
+        return ".work"
+
 class ZIPPusherConfiguration(MassPusherConfiguration):
     """
     Configurations inheriting this class will be able to export a ZIP archive of
     a whole batch of files onto the destination server.
     """
 
-    def _get_export_root_directory(self):
-        """ Helper: build the name of the directory to zip. """
-        
-        return '%s/%s' % (
-            settings.CARRIER_PIGEON_OUTPUT_DIRECTORY,
-            self.name,
+    @property
+    def archive_name(self):
+        """
+        Helper: build the filename of the ZIP archive to create.
+        """
+        return os.path.join(
+            self.root_directory,
+            "%s.zip" % self.name
         )
-
-    def _get_archive_name(self):
-        """ Helper: build the filename of the ZIP archive to create. """
-
-        return '%s/%s.zip' % (settings.CARRIER_PIGEON_OUTPUT_DIRECTORY, self.name)
 
     def pack(self):
         """ Pack files into ZIP archive. """
 
-        dirname = self._get_export_root_directory()
+        dirname = self.working_directory
         logging.debug("pack(): dirname: %s" % dirname)
 
         # --- Add files to export, if necessary
         self.add_files_to_export(dirname)
 
-        zipname = self._get_archive_name()
+        zipname = self.archive_name
         logging.debug("pack(): zipname: %s" % zipname)
 
         try:

@@ -26,5 +26,5 @@ class Command(BaseCommand):
             # --- EXPORT ALL THE THINGS! \o/
             rule.initialize_push()
             for item in rule.get_items_to_push():
-                rule.export_item(item)
+                rule.process_item(item)
             rule.finalize_push()

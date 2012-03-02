@@ -137,14 +137,23 @@ INSTALLED_APPS = (
 # more details on how to customize your logging configuration.
 LOGGING = {
     'version': 1,
-    'disable_existing_loggers': False,
+    'disable_existing_loggers': True,
     'handlers': {
+        'console':{
+            'level': 'DEBUG',
+            'class':'logging.StreamHandler',
+        },
         'mail_admins': {
             'level': 'ERROR',
             'class': 'django.utils.log.AdminEmailHandler'
         }
     },
     'loggers': {
+        '': {
+            'handlers':['mail_admins', 'console'],
+            'propagate': False,
+            'level' : 'DEBUG',
+        },
         'django.request': {
             'handlers': ['mail_admins'],
             'level': 'ERROR',
@@ -159,20 +168,17 @@ CARRIER_PIGEON_OUTPUT_DIRECTORY = os.path.join(SITE_ROOT, 'tmp', 'export')
 CARRIER_PIGEON_MAX_PUSH_ATTEMPTS = 5
 CARRIER_PIGEON_CLASSES = (
     "example_app.onthefly_rules.BelovedPartner",
-    "example_app.onthefly_rules.BelovedPartnerPhoto",
     "example_app.mass_rules.WeeklyDigest",
 )
 CARRIER_PIGEON_PUSH_URLS = {
     "belovedpartner": (
         "dummy://user:pwd@ftp.belovedpartner.org",
         "dummy://user:pwd@ftp.staging.belovedpartner.org",
-    ),
-    "belovedpartnerphoto": (
-        "dummy://user:pwd@ftp.belovedpartner.org",
-        "dummy://user:pwd@ftp.staging.belovedpartner.org",
+        "ftp://correcteurs:raymonde@ftpperso.free.fr/test",
     ),
     "weeklydigest": (
         "dummy://user:pwd@ftp.anotherpartner.org",
+        "ftp://correcteurs:raymonde@ftpperso.free.fr/bla",
         "dummy://user:pwd@ftp.onemore.org",
         "dummy://user:pwd@ftp.andanother.org",
     )
