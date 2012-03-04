@@ -16,10 +16,14 @@ logger = logging.getLogger('carrier_pigeon.configuration')
 
 
 class DefaultConfiguration(object):
-    """ This is an abstract class that you must inherit in your project
-    to create a configuration. By default this configuration try to
-    build an xml file from a template see ``get_output_filename`` and
-    ``output`` methods for more information. """
+    """
+    Abstract class for all configuration types.
+    
+    You must inherit from it to create a new type, but not when using carrier pigeon.
+    For this, you have to inherit one of the two types already existing:
+    - SequentialPusherConfiguration
+    - ZIPPusherConfiguration
+    """
 
     @property
     def name(self):
