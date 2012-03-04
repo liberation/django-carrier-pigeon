@@ -168,10 +168,6 @@ class BinaryOutputMaker(BaseOutputMaker):
 
         return '%s_%s' % (self.instance.__class__.__name__, self.instance.pk)
 
-    @property
-    def relative_final_directory(self):
-        return "photos"
-
     def release(self, output):
         """
         Copy the original file to the final file.
