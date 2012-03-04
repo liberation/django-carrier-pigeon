@@ -294,10 +294,8 @@ class ZIPPusherConfiguration(MassPusherConfiguration):
         """
         Helper: build the filename of the ZIP archive to create.
         """
-        return os.path.join(
-            self.root_directory,
-            "%s.zip" % self.name
-        )
+        return "%s.zip" % self.name
+        
 
     def pack(self):
         """ Pack files into ZIP archive. """
@@ -308,7 +306,10 @@ class ZIPPusherConfiguration(MassPusherConfiguration):
         # --- Add files to export, if necessary
         self.add_files_to_export(dirname)
 
-        zipname = self.archive_name
+        zipname = os.path.join(
+            self.root_directory,
+            self.archive_name
+        )
         logging.debug("pack(): zipname: %s" % zipname)
 
         try:
