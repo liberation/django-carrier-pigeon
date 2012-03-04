@@ -7,7 +7,7 @@ output do not validate.
 from xml.parsers.expat import ParserCreate
 
 
-def wellformed_xml_validator(output):
+def wellformed_xml_validator(output, outputmaker):
     """
     This check only the well-formedness.
     It's not a DTD based validation.
