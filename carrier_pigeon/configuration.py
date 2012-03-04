@@ -162,7 +162,7 @@ class DefaultConfiguration(object):
                         validator,
                         ItemToPush.STATUS.VALIDATION_ERROR,
                         row,
-                        func_args=[output, outputmaker],
+                        func_args=[output, output_maker],
                         default=False
                     )
                     if not validation:
