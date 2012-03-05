@@ -3,7 +3,7 @@
 from datetime import datetime
 
 from carrier_pigeon.facility import add_item_to_push
-from carrier_pigeon.validators import wellformed_xml_validator
+from carrier_pigeon.validators.xml.wellformed import WellformedXmlValidator
 from carrier_pigeon.configuration import SequentialPusherConfiguration
 from carrier_pigeon.supervisors import BaseSupervisor
 from carrier_pigeon.output_makers import TemplateOutputMaker, BinaryOutputMaker
@@ -39,7 +39,7 @@ class BPPhotoSupervisor(BaseSupervisor):
 
 class BPStoryOutputMaker(TemplateOutputMaker):
 
-    validators = (wellformed_xml_validator,)
+    validators = (WellformedXmlValidator,)
 
     def get_extra_context(self):
         read_also = Story.objects.all()[:3]  # Yes, ugly :)

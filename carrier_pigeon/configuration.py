@@ -157,12 +157,12 @@ class DefaultConfiguration(object):
             # an error if not
             if validators:
                 validation = False
-                for validator in validators:
+                for validator_class in validators:
+                    validator = validator_class(output, output_maker)
                     validation = self.prevent_from_failing(
-                        validator,
+                        validator.validate,
                         ItemToPush.STATUS.VALIDATION_ERROR,
                         row,
-                        func_args=[output, output_maker],
                         default=False
                     )
                     if not validation:
@@ -299,7 +299,6 @@ class ZIPPusherConfiguration(MassPusherConfiguration):
         Helper: build the filename of the ZIP archive to create.
         """
         return "%s.zip" % self.name
-        
 
     def pack(self):
         """ Pack files into ZIP archive. """
