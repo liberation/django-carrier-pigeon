@@ -111,7 +111,6 @@ class FTPSender(DefaultSender):
             target_url.login()
         logging.debug(u"_send_file(): logged in")
 
-        print "target_url.path", target_url.path
         target_path = os.path.join(
             target_url.path,
             self.get_relative_directory_for_file(file_path)
