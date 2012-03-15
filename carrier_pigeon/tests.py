@@ -15,7 +15,8 @@ from django.test import TestCase
 
 from django.contrib.webdesign import lorem_ipsum as lipsum
 
-from carrier_pigeon import REGISTRY, add_instance, subscribe_to_post_save
+from carrier_pigeon.registry import REGISTRY, add_instance
+from carrier_pigeon import subscribe_to_post_save
 from carrier_pigeon.models import BasicDirtyFieldsMixin, ItemToPush
 from carrier_pigeon.select import select
 from carrier_pigeon.senders import FTPSender

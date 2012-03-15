@@ -69,7 +69,7 @@ def select(sender, instance=None, created=False, **kwargs):
     logger.debug('post_save caught for %s?pk=%s' %
                  (instance._meta.object_name, instance.pk))
 
-    from carrier_pigeon import REGISTRY
+    from carrier_pigeon.registry import REGISTRY
 
     for rule_name, configuration in REGISTRY.iteritems():
         if not SequentialPusherConfiguration in configuration.__class__.mro():

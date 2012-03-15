@@ -4,7 +4,7 @@
 import logging
 from django.core.management.base import BaseCommand
 
-from carrier_pigeon import REGISTRY
+from carrier_pigeon.registry import REGISTRY
 
 
 logger = logging.getLogger('carrier_pigeon.command.mass_push')
