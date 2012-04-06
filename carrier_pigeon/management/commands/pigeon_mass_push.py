@@ -12,7 +12,7 @@ logger = logging.getLogger('carrier_pigeon.command.mass_push')
 
 class Command(BaseCommand):
     """ Archive and push content items as specified. """
-    args = '<rule_name get item to push arguments>'
+    args = '<rule_name [get_item_to_push_argument get_item_to_push_argument ...]>'
     help = __doc__
 
     def handle(self, *args, **options):
@@ -27,3 +27,4 @@ class Command(BaseCommand):
             for item in rule.get_items_to_push(*args[1:]):
                 rule.process_item(item)
             rule.finalize_push()
+            self.stdout.write('Job runned correctly')
