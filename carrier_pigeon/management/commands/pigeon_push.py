@@ -40,8 +40,6 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
 
-        rules = {}
-
         for row in item_to_push_queue():
             rule_name = row.rule_name
             try:
