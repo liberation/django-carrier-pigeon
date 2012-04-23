@@ -141,9 +141,3 @@ class FTPSender(DefaultSender):
         logging.debug(u"_send_file(): disconnected")
 
         return True
-
-# FIXME make it customisable
-SENDER_MAPPING = {
-    'ftp': FTPSender,
-    'dummy': DummySender,
-}

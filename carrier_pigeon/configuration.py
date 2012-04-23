@@ -8,7 +8,7 @@ import logging
 from django.conf import settings
 
 from carrier_pigeon.models import ItemToPush
-from carrier_pigeon.senders import SENDER_MAPPING
+from carrier_pigeon.senders import DummySender, FTPSender
 from carrier_pigeon.utils import URL, TreeHash, zipdir
 
 
@@ -24,6 +24,11 @@ class DefaultConfiguration(object):
     - SequentialPusherConfiguration
     - ZIPPusherConfiguration
     """
+
+    SENDER_MAPPING = {
+        'ftp': FTPSender,
+        'dummy': DummySender,
+    }
 
     @property
     def name(self):
@@ -210,7 +215,7 @@ class DefaultConfiguration(object):
     def deliver(self, files, target_url, row=None):
         """Defines from url scheme the right sender to use, and calls it."""
         try:
-            sender_class = SENDER_MAPPING[target_url.scheme]
+            sender_class = self.SENDER_MAPPING[target_url.scheme]
         except KeyError:
             logger.error('url scheme %s not supported' % target_url.scheme)
         else:
