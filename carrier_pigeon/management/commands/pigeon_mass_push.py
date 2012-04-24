@@ -24,7 +24,8 @@ class Command(BaseCommand):
         else:
             # --- EXPORT ALL THE THINGS! \o/
             rule.initialize_push()
+            files = []
             for item in rule.get_items_to_push(*args[1:]):
-                rule.process_item(item)
-            rule.finalize_push()
+                files += rule.process_item(item)
+            rule.finalize_push(files)
             self.stdout.write('Job runned correctly')

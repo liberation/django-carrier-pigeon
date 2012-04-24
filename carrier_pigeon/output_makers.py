@@ -59,7 +59,7 @@ class BaseOutputMaker(object):
         / carrier pigeon working dir / current config working dir / remote dir /
         """
         return os.path.join(
-            self.configuration.working_directory,
+            self.configuration.tmp_directory,
             self.relative_final_path,
         )
 
@@ -69,7 +69,7 @@ class BaseOutputMaker(object):
         Returns the final output dir.
         """
         return os.path.join(
-            self.configuration.working_directory,
+            self.configuration.tmp_directory,
             self.relative_final_directory,
         )
 

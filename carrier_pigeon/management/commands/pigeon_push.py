@@ -66,6 +66,6 @@ class Command(BaseCommand):
             row.status = ItemToPush.STATUS.IN_PROGRESS
             row.save()
             # Do the job
-            rule.process_item(row.content_object, row)
+            files = rule.process_item(row.content_object, row)
             # Final hook
-            rule.finalize_push()
+            rule.finalize_push(files, row)

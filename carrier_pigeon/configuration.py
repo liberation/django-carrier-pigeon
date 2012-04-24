@@ -98,22 +98,24 @@ class DefaultConfiguration(object):
         )
 
     @property
-    def working_directory(self):
+    def tmp_directory(self):
         """
         Effective directory where the file are stored by the OutputMakers.
         """
         return os.path.join(
             self.root_directory,
-            self.tmp_directory,
+            "tmp",
         )
 
     @property
-    def tmp_directory(self):
+    def outbox_directory(self):
         """
-        Relative working directory. Used by archive pushers to store temporary
-        the files that will be archived.
+        Effective directory where the file are stored by the Packers.
         """
-        return ""
+        return os.path.join(
+            self.root_directory,
+            "outbox",
+        )
 
     def output_files_from_item(self, item, row=None):
         """
@@ -122,6 +124,8 @@ class DefaultConfiguration(object):
         `item` is a content to push
         `row` is the optionnal correspondant ItemToPush instance
         (only for sequential mode).
+        
+        Could be recursive if item as related_items.
         """
 
         output_files = []
@@ -202,15 +206,29 @@ class DefaultConfiguration(object):
         return output_files
 
     def process_item(self, item, row=None):
+        """
+        Called for each entry item.
+        
+        Which means one time for sequential pusher, many times for mass pusher.
+        """
         return self.output_files_from_item(item, row)
 
-    def finalize_push(self):
-        """ Right here, it's nothing more than a placeholder, but you may use
-        this method in your subclass if you need a hook to execute some code
-        after looping on the items to export. For example, if the exported
-        files need to be archived and sent, this will happen here. """
+    def pack(self, files):
+        if not files:
+            pass # must stop process here
+        packer = self.packer(self, files)
+        return packer.pack()
 
-        pass
+    def cleanup(self):
+        """ Delete temporary files in export directory. """
+        if os.path.exists(self.tmp_directory):
+            shutil.rmtree(self.tmp_directory)
+
+    def finalize_push(self, files, row):
+        """
+        Called one time per push.
+        """
+        raise NotImplementedError()
 
     def deliver(self, files, target_url, row=None):
         """Defines from url scheme the right sender to use, and calls it."""
@@ -231,15 +249,22 @@ class SequentialPusherConfiguration(DefaultConfiguration):
     Associated management command: python manage.py pigeon_push
     """
 
-    def process_item(self, item, row):
+    def finalize_push(self, files, row):
+        """
+        Send packed files to row.push_url.
+        """
 
-        files = self.output_files_from_item(item, row)
+        # --- Pack exported files
+        files = self.pack(files)
 
         target_url = row.push_url
         logger.debug('export_item(): target url: ``%s``' % target_url)
         target_url = URL(target_url)
 
-        return self.deliver(files, target_url, row)
+        self.deliver(files, target_url, row)
+
+        # --- Cleanup the mess
+        self.cleanup()
 
 
 class MassPusherConfiguration(DefaultConfiguration):
@@ -250,30 +275,17 @@ class MassPusherConfiguration(DefaultConfiguration):
     Management command: python manage.py pigeon_mass_push <config_name>
     """
 
-    _local_checksum = _remote_checksum = False  # --- Used in tests, to
-                                                #      validate the export
-
     def get_items_to_push(self):
         """ Get the list of items to include in this push. Implement me! """
         return list()
 
-    def add_files_to_export(self, export_dir):
-        """ Add files to export. Implement me! """
-        pass
-
-    def pack(self):
-        """ Pack files to deliver, return a list of files. Implement me! """
-        return list()
-
-    def cleanup(self):
-        """ Delete temporary files in export directory. """
-        if os.path.exists(self.working_directory):
-            shutil.rmtree(self.working_directory)
-
-    def finalize_push(self):
+    def finalize_push(self, files, row=None):
+        """
+        Send packed files one time per push url.
+        """
 
         # --- Pack exported files
-        files = self.pack()
+        files = self.pack(files)
 
         # --- Deliver newly-created archive to destination
         for push_url in self.push_urls:
@@ -281,72 +293,3 @@ class MassPusherConfiguration(DefaultConfiguration):
 
         # --- Cleanup the mess
         self.cleanup()
-
-    @property
-    def tmp_directory(self):
-        """
-        Relative directory to temporary store files in.
-
-        **Must** be defined for archive pushers.
-        """
-        return ".work"
-
-
-class ZIPPusherConfiguration(MassPusherConfiguration):
-    """
-    Configurations inheriting this class will be able to export a ZIP archive of
-    a whole batch of files onto the destination server.
-    """
-
-    @property
-    def archive_name(self):
-        """
-        Helper: build the filename of the ZIP archive to create.
-        """
-        return "%s.zip" % self.name
-
-    def pack(self):
-        """ Pack files into ZIP archive. """
-
-        dirname = self.working_directory
-        logging.debug("pack(): dirname: %s" % dirname)
-
-        # --- Add files to export, if necessary
-        self.add_files_to_export(dirname)
-
-        zipname = os.path.join(
-            self.root_directory,
-            self.archive_name
-        )
-        logging.debug("pack(): zipname: %s" % zipname)
-
-        try:
-            zipdir(dirname, zipname)
-        except IOError:
-            logging.error(u"pack(): Cannot create archive '%s' in directory '%s'" \
-                % (zipname, dirname))
-            raise
-        except Exception, e:
-            message = u"pack(): Exception during archive creation. "
-            message += u'Exception ``%s`` raised: %s ' \
-                % (e.__class__.__name__, e.message)
-            logging.error(message, exc_info=True)
-            raise
-
-        self._archive_name = os.path.basename(zipname)
-        logging.debug("pack(): archive_name: %s" % self._archive_name)
-
-        self._local_checksum = TreeHash(dirname).hash()
-        logging.debug("pack(): local_checksum: %s" % self._local_checksum)
-
-        return [zipname]
-
-
-class TARPusherConfiguration(MassPusherConfiguration):
-    """ Later...? """
-    pass
-
-
-class DirectoryPusherConfiguration(MassPusherConfiguration):
-    """ Later...? """
-    pass

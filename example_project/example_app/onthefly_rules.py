@@ -7,9 +7,22 @@ from carrier_pigeon.validators.xml.wellformed import WellformedXmlValidator
 from carrier_pigeon.configuration import SequentialPusherConfiguration
 from carrier_pigeon.supervisors import BaseSupervisor
 from carrier_pigeon.output_makers import TemplateOutputMaker, BinaryOutputMaker
+from carrier_pigeon.packers import FlatPacker, ZIPPacker
 
 from example_app.models import Story, Photo
 
+class BPPhotoOutputMaker(BinaryOutputMaker):
+    """
+    Responsible of creating the output for a Photo.
+    """
+
+    @property
+    def relative_final_directory(self):
+        return 'medias'
+
+    @property
+    def final_file_name(self):
+        return "%d.jpg" % self.instance.pk
 
 class BPPhotoSupervisor(BaseSupervisor):
 
@@ -24,17 +37,8 @@ class BPPhotoSupervisor(BaseSupervisor):
         # We want all the photos in the queue
         return True
 
-    @property
-    def relative_final_directory(self):
-        # Local directory in the working dir of pigeon
-        return 'medias'
-
-    @property
-    def final_file_name(self):
-        return "%d.jpg" % self.instance.pk
-
     def get_output_makers(self):
-        return [BinaryOutputMaker(self.configuration, self.instance, "original_file")]
+        return [BPPhotoOutputMaker(self.configuration, self.instance, "original_file")]
 
 
 class BPStoryOutputMaker(TemplateOutputMaker):
@@ -85,7 +89,9 @@ class BelovedPartner(SequentialPusherConfiguration):
     """
     Configuration for the exports to BelovedPartner.
     """
-    
+
+    packer = FlatPacker
+
     def get_supervisor_for_item(self, item):
         if item.__class__ == Story:
             return BPStorySupervisor(self, item)
@@ -94,3 +100,9 @@ class BelovedPartner(SequentialPusherConfiguration):
         else:
             ValueError("No supervisor found for class %s" % item.__class__)
 
+class AnotherBelovedPartner(BelovedPartner):
+    """
+    Configuration for the exports to AnotherBelovedPartner, who wants a zipped export.
+    """
+
+    packer = ZIPPacker

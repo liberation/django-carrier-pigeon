@@ -74,9 +74,9 @@ class DefaultSender(object):
         """
         Get the place in the files tree where to push the file remotely.
         """
-        if not file_path.startswith(self.configuration.root_directory):
+        if not file_path.startswith(self.configuration.outbox_directory):
             raise ValueError("Files must be stored in the configuration directory.")
-        relative_path = file_path[len(self.configuration.root_directory):]
+        relative_path = file_path[len(self.configuration.outbox_directory):]
         path_elements = os.path.split(relative_path)
         if len(path_elements) > 1:
             relative_dir = path_elements[0]
