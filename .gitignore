@@ -3,3 +3,5 @@
 *.sqlite
 *~
 example_project/tmp/*
+example_project/medias
+example_project/data.db

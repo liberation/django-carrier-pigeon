@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import os
+import hashlib
 
 from datetime import datetime
 
@@ -106,3 +108,10 @@ class AnotherBelovedPartner(BelovedPartner):
     """
 
     packer = ZIPPacker
+
+    @property
+    def archive_name(self):
+        m = hashlib.sha1()
+        m.update(os.urandom(24))
+        filename = m.hexdigest()
+        return '%s.zip' % filename
