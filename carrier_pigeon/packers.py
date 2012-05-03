@@ -17,7 +17,7 @@ class BasePacker(object):
 
     def __init__(self, configuration, files):
         self.configuration = configuration
-        self.files = files
+        self.files = set(files)
 
     def pack(self, files):
         raise NotImplementedError()
