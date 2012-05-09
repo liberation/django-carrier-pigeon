@@ -64,7 +64,7 @@ class FlatMassExportTest(ImplementationBaseTests):
             workflow_state=Story.WORKFLOW_STATE.ONLINE,
             content='a'*500,
             photo=photo,
-            updating_date=datetime.now()
+            updating_date=datetime(2012, 5, 3),
         )
         story.save()
         self.stories.append(story)
@@ -73,7 +73,7 @@ class FlatMassExportTest(ImplementationBaseTests):
             workflow_state=Story.WORKFLOW_STATE.ONLINE,
             content='a'*500,
             photo=photo,
-            updating_date=datetime.now()
+            updating_date=datetime(2012, 5, 3)
         )
         story.save()
         self.stories.append(story)
