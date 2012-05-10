@@ -55,10 +55,7 @@ class WeeklyDigest(MassPusherConfiguration):
 
     def get_items_to_push(self):
         """ Export all articles published during the previous week. """
-
-        now = datetime.datetime.now()
-        one_week_ago = now - datetime.timedelta(days=7)
-        items = Story.objects.filter(updating_date__gt=one_week_ago)
+        items = Story.objects.filter(workflow_state=Story.WORKFLOW_STATE.ONLINE)
         return items
 
 class FlatMassExport(MassPusherConfiguration):
@@ -78,9 +75,5 @@ class FlatMassExport(MassPusherConfiguration):
 
     def get_items_to_push(self):
         """ Export all articles published during the previous week. """
-
-        now = datetime.datetime.now()
-        one_week_ago = now - datetime.timedelta(days=7)
-        items = Story.objects.filter(updating_date__gt=one_week_ago)
+        items = Story.objects.filter(workflow_state=Story.WORKFLOW_STATE.ONLINE)
         return items
-

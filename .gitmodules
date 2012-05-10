@@ -1,0 +1,3 @@
+[submodule "deps/django-extended-choices"]
+	path = deps/django-extended-choices
+	url = https://github.com/liberation/django-extended-choices.git
