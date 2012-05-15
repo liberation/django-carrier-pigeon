@@ -16,7 +16,7 @@ def filter(rule_name, model_supervisor, instance, created):
         validation = model_supervisor.filter_by_instance_type()
     except Exception, e:
         logger.error('error during filter_by_instance_type')
-        logger.error('catched exception message: %s' % e.message)
+        logger.error(u'catched exception message: %s' % e.message)
         row = ItemToPush(rule_name=rule_name,
                          content_object=instance)
         row.status = ItemToPush.STATUS.FILTER_BY_INSTANCE_TYPE_ERROR
@@ -33,7 +33,7 @@ def filter(rule_name, model_supervisor, instance, created):
             validation = model_supervisor.filter_by_updates()
         except Exception, e:
             logger.error('error during filter_by_updates')
-            logger.error('catched exception message: %s' % e.message)
+            logger.error(u'catched exception message: %s' % e.message)
             row = ItemToPush(rule_name=rule_name,
                              content_object=instance)
             row.status = ItemToPush.STATUS.FILTER_BY_UPDATES_ERROR
@@ -49,7 +49,7 @@ def filter(rule_name, model_supervisor, instance, created):
         validation = model_supervisor.filter_by_state()
     except Exception, e:
         logger.error('error during filter_by_state')
-        logger.error('catched exception message: %s' % e.message)
+        logger.error(u'catched exception message: %s' % e.message)
         row = ItemToPush(rule_name=rule_name,
                          content_object=instance)
         row.status = ItemToPush.STATUS.FILTER_BY_STATE_ERROR
@@ -66,7 +66,7 @@ def filter(rule_name, model_supervisor, instance, created):
 def select(sender, instance=None, created=False, **kwargs):
     """Add instance to ItemToPush queue for each partner that
     validated the instance."""
-    logger.debug('post_save caught for %s?pk=%s' %
+    logger.debug(u'post_save caught for %s?pk=%s' %
                  (instance._meta.object_name, instance.pk))
 
     from carrier_pigeon.registry import REGISTRY
