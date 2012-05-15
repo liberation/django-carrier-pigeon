@@ -11,9 +11,9 @@ def add_item_to_push(instance, rule_name):
     """Adds an item to ``ItemToPush`` table aka. push queue"""
     logger.debug('adding %s pk=%s for %s config' % (
         type(instance).__name__,
-        instance.pk
-        rule_name)
-        )
+        instance.pk,
+        rule_name
+    ))
 
     from carrier_pigeon.registry import REGISTRY
 
