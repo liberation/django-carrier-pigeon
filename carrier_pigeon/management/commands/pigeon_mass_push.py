@@ -20,7 +20,7 @@ class Command(BaseCommand):
         try:
             rule = REGISTRY[rule_name]
         except KeyError:
-            logger.warning(u"Sorry, rule '%s' does not exist" % rule_name)
+            self.stdout.write(u"Sorry, rule '%s' does not exist" % rule_name)
         else:
             # --- EXPORT ALL THE THINGS! \o/
             rule.initialize_push()
