@@ -43,7 +43,7 @@ class DefaultSender(object):
 
             sent = False
             for push_att_num in xrange(max_):
-                logger.debug("'%s': push attempt #%s" % (f, push_att_num + 1))
+                logger.debug(u"'%s': push attempt #%s" % (f, push_att_num + 1))
                 try:
                     sent = self._send_file(f, target_url, row)
                     break

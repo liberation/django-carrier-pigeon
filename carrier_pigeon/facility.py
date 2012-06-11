@@ -9,7 +9,11 @@ logger = logging.getLogger('carrier_pigeon.facility')
 
 def add_item_to_push(instance, rule_name):
     """Adds an item to ``ItemToPush`` table aka. push queue"""
-    logger.debug('adding %s for %s config' % (instance, rule_name))
+    logger.debug('adding %s pk=%s for %s config' % (
+        type(instance).__name__,
+        instance.pk,
+        rule_name
+    ))
 
     from carrier_pigeon.registry import REGISTRY
 
