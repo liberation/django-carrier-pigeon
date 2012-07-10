@@ -28,4 +28,4 @@ class Command(BaseCommand):
             for item in rule.get_items_to_push(*args[1:]):
                 files += rule.process_item(item)
             rule.finalize_push(files)
-            self.stdout.write('Job runned correctly')
+            self.stdout.write('Job ran correctly')
