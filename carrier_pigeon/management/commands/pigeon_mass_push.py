@@ -3,6 +3,7 @@
 
 import logging
 from django.core.management.base import BaseCommand
+from django.core.management.base import CommandError
 
 from carrier_pigeon.registry import REGISTRY
 
@@ -20,7 +21,7 @@ class Command(BaseCommand):
         try:
             rule = REGISTRY[rule_name]
         except KeyError:
-            self.stdout.write(u"Sorry, rule '%s' does not exist" % rule_name)
+            raise CommandError()
         else:
             # --- EXPORT ALL THE THINGS! \o/
             rule.initialize_push()
@@ -28,4 +29,4 @@ class Command(BaseCommand):
             for item in rule.get_items_to_push(*args[1:]):
                 files += rule.process_item(item)
             rule.finalize_push(files)
-            self.stdout.write('Job runned correctly')
+            self.stdout.write('Job ran correctly')
