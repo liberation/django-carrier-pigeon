@@ -18,7 +18,7 @@ logger = logging.getLogger('carrier_pigeon.configuration')
 class DefaultConfiguration(object):
     """
     Abstract class for all configuration types.
-    
+
     You must inherit from it to create a new type, but not when using carrier pigeon.
     For this, you have to inherit one of the two types already existing:
     - SequentialPusherConfiguration
@@ -82,7 +82,7 @@ class DefaultConfiguration(object):
                 row.status = error_status
                 row.message = message
                 row.save()
-            logger.error(message, exc_info=True)
+            logger.exception(message, exc_info=True)
         return returned
 
     @property
@@ -124,7 +124,7 @@ class DefaultConfiguration(object):
         `item` is a content to push
         `row` is the optionnal correspondant ItemToPush instance
         (only for sequential mode).
-        
+
         Could be recursive if item as related_items.
         """
 
@@ -208,7 +208,7 @@ class DefaultConfiguration(object):
     def process_item(self, item, row=None):
         """
         Called for each entry item.
-        
+
         Which means one time for sequential pusher, many times for mass pusher.
         """
         return self.output_files_from_item(item, row)
