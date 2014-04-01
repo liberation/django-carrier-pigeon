@@ -5,7 +5,7 @@ import os.path
 import logging
 
 from abc import abstractmethod
-from ftplib import FTP, error_perm
+from ftplib import FTP, FTP_TLS, error_perm
 from datetime import datetime
 
 from django.conf import settings
@@ -95,21 +95,24 @@ class DummySender(DefaultSender):
 
 
 class FTPSender(DefaultSender):
+    ftp_class = FTP
+
+    def _connect(self, file_path, target_url):
+        ftp = self.ftp_class(timeout=30)
+        ftp.connect(target_url.domain, target_url.port)
+        logging.debug(u"_send_file(): connected to %s on port %s" %
+                      (target_url.domain, target_url.port if target_url.port \
+                           else u"[default]"))
+
+        ftp.login(target_url.login, target_url.password)
+        logging.debug(u"_send_file(): logged in")
+
+        return ftp
 
     def _send_file(self, file_path, target_url, row=None):
         """ Send the file by FTP using information found in url. """
 
-        ftp = FTP(timeout=30)
-        ftp.connect(target_url.domain, target_url.port)
-        logging.debug(u"_send_file(): connected to %s on port %s"
-            % (target_url.domain, target_url.port if target_url.port \
-                 else u"[default]"))
-
-        if target_url.login:
-            ftp.login(target_url.login, target_url.password)
-        else:
-            target_url.login()
-        logging.debug(u"_send_file(): logged in")
+        ftp = self._connect()
 
         target_path = os.path.join(
             target_url.path,
@@ -141,3 +144,12 @@ class FTPSender(DefaultSender):
         logging.debug(u"_send_file(): disconnected")
 
         return True
+
+
+class FTPSSender(FTPSender):
+    ftp_class = FTP_TLS
+
+    def _connect(self, file_path, target_url):
+        ftp = super(FTPSSender, self)._connect(file_path, target_url)
+        ftp.prot_p()
+        return ftp
