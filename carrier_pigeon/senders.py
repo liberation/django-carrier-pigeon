@@ -118,7 +118,7 @@ class FTPSender(DefaultSender):
     def _send_file(self, file_path, target_url, row=None):
         """ Send the file by FTP using information found in url. """
 
-        ftp = self._connect()
+        ftp = self._connect(file_path, target_url)
 
         target_path = os.path.join(
             target_url.path,
