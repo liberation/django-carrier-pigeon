@@ -3,10 +3,16 @@
 import os
 import os.path
 import logging
+from datetime import datetime
 
 from abc import abstractmethod
-from ftplib import FTP, FTP_TLS, error_perm
-from datetime import datetime
+from ftplib import FTP, error_perm
+
+# FTP_TLS is not in py2.6
+try:
+    from ftplib import FTP_TLS
+except:
+    from carrier_pigeon.lib.ftplib import FTP_TLS
 
 from django.conf import settings
 from django.template.defaultfilters import date as format_date
