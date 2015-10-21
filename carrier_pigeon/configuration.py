@@ -158,6 +158,8 @@ class DefaultConfiguration(object):
                 row,
             )
             if not output:
+                logger.info("Error for item %i with Output Maker %s"
+                            % (item.pk, output_maker))
                 continue
 
             # --- Validate output
@@ -176,11 +178,19 @@ class DefaultConfiguration(object):
                         default=False
                     )
                     if not validation:
+                        logger.info("Validation error for item %i with"
+                                    " validator %s"
+                                    % (
+                                        item.pk,
+                                        validator_class
+                                    ))
                         break  # escape from first for loop
 
                 if not validation:  # --- If one validator did not pass we
                                     #      do no want to send the file
-                    logger.debug('the output was not validated')
+                    logger.info("the output was not validated for item : %i"
+                                % item.pk
+                                )
                     continue  # We don't want the export process to be stopped
                               # Jump to next output
 
@@ -197,6 +207,7 @@ class DefaultConfiguration(object):
             )
 
             if local_final_path:
+                logger.info("File added to output: %s" % local_final_path)
                 output_files.append(local_final_path)
 
         # --- Manage related items, if any
