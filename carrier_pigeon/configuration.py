@@ -158,7 +158,7 @@ class DefaultConfiguration(object):
                 row,
             )
             if not output:
-                logger.info("Error for item %i with Output Maker %s"
+                logger.error("Error for item %i with Output Maker %s"
                             % (item.pk, output_maker))
                 continue
 
@@ -178,7 +178,7 @@ class DefaultConfiguration(object):
                         default=False
                     )
                     if not validation:
-                        logger.info("Validation error for item %i with"
+                        logger.error("Validation error for item %i with"
                                     " validator %s"
                                     % (
                                         item.pk,
@@ -188,7 +188,7 @@ class DefaultConfiguration(object):
 
                 if not validation:  # --- If one validator did not pass we
                                     #      do no want to send the file
-                    logger.info("the output was not validated for item : %i"
+                    logger.error("the output was not validated for item : %i"
                                 % item.pk
                                 )
                     continue  # We don't want the export process to be stopped
@@ -207,7 +207,7 @@ class DefaultConfiguration(object):
             )
 
             if local_final_path:
-                logger.info("File added to output: %s" % local_final_path)
+                logger.warning("File added to output: %s" % local_final_path)
                 output_files.append(local_final_path)
 
         # --- Manage related items, if any
