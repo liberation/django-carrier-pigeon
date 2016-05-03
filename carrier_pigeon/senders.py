@@ -14,6 +14,8 @@ try:
 except:
     from carrier_pigeon.lib.ftplib import FTP_TLS
 
+import paramiko
+
 from django.conf import settings
 from django.template.defaultfilters import date as format_date
 
@@ -159,3 +161,44 @@ class FTPSSender(FTPSender):
         ftp = super(FTPSSender, self)._connect(file_path, target_url)
         ftp.prot_p()
         return ftp
+
+
+class SFTPSender(DefaultSender):
+
+    def _connect(self, file_path, target_url):
+        transport = paramiko.Transport(
+            (target_url.domain,
+             target_url.port if target_url.port else 22)
+        )
+
+        transport.connect(username=target_url.login,
+                          password=target_url.password)
+
+        sftp = paramiko.SFTPClient.from_transport(transport)
+
+        return sftp
+
+    def _send_file(self, file_path, target_url, row=None):
+        sftp = self._connect(file_path, target_url)
+
+        target_path = os.path.join(
+            target_url.path,
+            self.get_relative_directory_for_file(file_path)
+        )
+
+        logging.debug(u"_send_file(): target_path: %s" % target_path)
+
+        try:
+            sftp.mkdir(target_path)
+        except:
+            logging.debug(u"_send_file(): target_path already exists")
+
+        filename = os.path.split(file_path)[1]
+        logging.debug(u"_send_file(): filename: %s" % filename)
+
+        sftp.put(file_path, os.path.join(target_path, filename))
+        logging.debug(u"_send_file(): push ok")
+
+        sftp.close()
+
+        return True
