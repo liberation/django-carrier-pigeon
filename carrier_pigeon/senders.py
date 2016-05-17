@@ -166,17 +166,18 @@ class FTPSSender(FTPSender):
 class SFTPSender(DefaultSender):
 
     def _connect(self, file_path, target_url):
-        transport = paramiko.Transport(
-            (target_url.domain,
-             target_url.port if target_url.port else 22)
+        self.client = paramiko.SSHClient()
+
+        self.client.set_missing_host_key_policy(paramiko.MissingHostKeyPolicy())
+
+        self.client.connect(
+            target_url.domain,
+            port=target_url.port if target_url.port else 22,
+            username=target_url.login,
+            password=target_url.password
         )
 
-        transport.connect(username=target_url.login,
-                          password=target_url.password)
-
-        sftp = paramiko.SFTPClient.from_transport(transport)
-
-        return sftp
+        return self.client.open_sftp()
 
     def _send_file(self, file_path, target_url, row=None):
         sftp = self._connect(file_path, target_url)
