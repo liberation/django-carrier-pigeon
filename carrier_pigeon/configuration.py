@@ -8,7 +8,7 @@ import logging
 from django.conf import settings
 
 from carrier_pigeon.models import ItemToPush
-from carrier_pigeon.senders import DummySender, FTPSender, FTPSSender
+from carrier_pigeon.senders import DummySender, FTPSender, FTPSSender, SFTPSender
 from carrier_pigeon.utils import URL
 
 
@@ -28,6 +28,7 @@ class DefaultConfiguration(object):
     SENDER_MAPPING = {
         'ftp': FTPSender,
         'ftps': FTPSSender,
+        'sftp': SFTPSender,
         'dummy': DummySender,
     }
 

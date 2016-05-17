@@ -15,4 +15,7 @@ setup(name='django-carrier-pigeon',
       author_email='devweb@liberation.fr',
       url='https://github.com/liberation/django-push-content',
       packages=['carrier_pigeon'],
+      install_requires=[
+          'paramiko',
+      ]
      )
