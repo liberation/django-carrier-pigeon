@@ -177,13 +177,16 @@ class SFTPSender(DefaultSender):
             password=target_url.password
         )
 
-        return self.client.open_sftp()
+        sftp = self.client.open_sftp()
+        sftp.chdir('.')
+
+        return sftp
 
     def _send_file(self, file_path, target_url, row=None):
         sftp = self._connect(file_path, target_url)
 
         target_path = os.path.join(
-            target_url.path,
+            sftp.getcwd() + target_url.path,
             self.get_relative_directory_for_file(file_path)
         )
 
