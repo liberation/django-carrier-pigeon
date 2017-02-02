@@ -67,7 +67,7 @@ class DefaultSender(object):
                 logger.info(feedback)
             else:
                 feedback = u"[%s] '%s': push ERROR: %s TARGET: %s" % (
-                    now, f, ex, target_url
+                    now, f, ex, target_url.domain
                 )
                 logger.error(feedback)
                 ok = False
