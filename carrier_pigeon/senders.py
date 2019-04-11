@@ -174,7 +174,7 @@ class SFTPSender(DefaultSender):
 
         self.client.connect(
             target_url.domain,
-            port=target_url.port if target_url.port else 22,
+            port=int(target_url.port) if target_url.port else 22,
             username=target_url.login,
             password=target_url.password
         )
